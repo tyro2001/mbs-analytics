@@ -1,0 +1,123 @@
+---
+title: "Part IV: Forward Curves"
+subtitle: "Problems 13–16"
+---
+
+## Problem 13: Forward Curve — Constant Maturity Treasuries
+
+To calibrate a forward curve using market inputs, we first need to generate cash flows for our calibration instruments. Although mortgage shops typically use a SOFR-based curve, calculating the floating rate side of a SOFR swap is tedious and doesn't add much intuition for curve construction. Instead, we will use **Constant Maturity Treasuries** (CMTs). CMTs are hypothetical [bullet bonds](https://www.investopedia.com/terms/b/bulletbond.asp) that behave like Treasury bonds if they were issued daily, with [spot](https://en.wikipedia.org/wiki/Spot_contract#Bonds_and_swaps) [par](https://en.wikipedia.org/wiki/Par_value) coupons [published](https://home.treasury.gov/resource-center/data-chart-center/interest-rates/TextView?type=daily_treasury_yield_curve&field_tdr_date_value_month=202408) by the U.S. Treasury Department.
+
+**Task:** Create a function that generates cash flows for these bonds. Inputs:
+
+- **Bond effective date** (start date of the bond)
+- **Balance** (face amount)
+- **Annual coupon rate** (decimal form)
+- **Number of years** (integer)
+
+The function should return two vectors: the payment dates and the corresponding cash flows. The first cash flow occurs six months from the effective date; the final one occurs the specified number of years after the effective date. Each cash flow includes the coupon payment (`balance * coupon / 2`), with the final cash flow also including principal repayment. Raise an error if the day of month is greater than 28.
+
+**Example Output:**
+
+With inputs `10/1/2024`, balance `100`, coupon `0.05`, and term `2` years:
+
+| PaymentDate | CashFlow |
+|------------:|---------:|
+| 2024-10-01 |    0.00 |
+| 2025-04-01 |    2.50 |
+| 2025-10-01 |    2.50 |
+| 2026-04-01 |    2.50 |
+| 2026-10-01 |  102.50 |
+
+---
+
+## Problem 14: Forward Curve — Bootstrapping
+
+A forward curve of instantaneous discount rates maps future points in time to discount rates. This function helps determine the present value of cash flows occurring at those specific future dates. The formulas are the same as in Problem 9.
+
+Forward curves aren't directly observable — they must be calibrated from market prices or yields. A common misunderstanding is that forward rates represent the market's forecast of future rates. In fact, forward rates tell you the rates you can lock in *today* for accrual periods starting in the future. They reflect what you can secure today for a future period, not necessarily what the market expects rates to be.
+
+The simplest calibration technique is the **bootstrap method**, which constructs a curve from observed prices of calibration securities. Our calibration instruments are CMTs. To begin:
+
+1. Select a market close date from the [Treasury Department's CMT website](https://home.treasury.gov/resource-center/data-chart-center/interest-rates/) and gather par yields for maturities from 1 to 30 years.
+2. Create a date grid starting from the close date that includes each bond's maturity date.
+3. Construct a step function of instantaneous, continuously compounded discount rates with knots based on the maturity grid.
+4. The method is called a "bootstrap" because you solve sequentially: find the constant rate from 0 to 1 year that produces par for the 1-year bond, lock it in, then solve for the 2-year, and so on until the 30-year bond.
+
+::: {.nb}
+**NB:** Your ZCB calculator may have assumed a uniform grid of discount rates. You may need to generalize it to handle an arbitrary step function structure.
+:::
+
+**Example Output:**
+
+Rates pulled on 10/1/2024:
+
+| Term (Years) | Coupon (%) |
+|-------------:|-----------:|
+|  1 |  3.92 |
+|  2 |  3.55 |
+|  3 |  3.46 |
+|  5 |  3.48 |
+|  7 |  3.59 |
+| 10 |  3.73 |
+| 20 |  4.10 |
+| 30 |  4.07 |
+
+Bootstrap output (effective date 10/1/2024):
+
+| Time (Years) | Short Rate (%) |
+|-------------:|---------------:|
+|  0.000 | 3.882 |
+|  1.000 | 3.143 |
+|  2.000 | 3.246 |
+|  3.000 | 3.477 |
+|  5.003 | 3.864 |
+|  7.004 | 4.080 |
+| 10.005 | 4.607 |
+| 20.014 | 3.913 |
+
+::: {.nb}
+**NB:** Time is not an integer — it is based on a 365-day year assumption.
+:::
+
+---
+
+## Problem 15: Forward Bond Rates
+
+Now that you have a forward curve, write a function to calculate the coupon rate required to produce a par price for a given semi-annual bond. The function should take a start date $t$ ($\geq$ market close) and a maturity date $T$ ($\geq t$). If $t$ is the market close and $T$ matches one of your calibration maturities, the function should reproduce the exact coupon from calibration. When $t >$ market close, the function produces a "forward" bond rate — the rate you can lock in today for a bond starting at time $t$.
+
+::: {.nb}
+**NB:** You may be tempted to use an optimizer, but only algebra is required.
+:::
+
+**Example Output:**
+
+| Effective | Term (Years) | Forward Rate (%) |
+|----------:|-------------:|-----------------:|
+| 2024-10-01 |  2 | 3.550000 |
+| 2024-10-01 |  4 | 3.473650 |
+| 2024-10-01 |  5 | 3.480000 |
+| 2024-10-01 | 10 | 3.730000 |
+| 2026-05-15 |  2 | 3.327464 |
+| 2026-05-15 |  4 | 3.472092 |
+| 2026-05-15 |  5 | 3.551955 |
+| 2026-05-15 | 10 | 3.876309 |
+| 2030-09-14 |  2 | 4.009911 |
+| 2030-09-14 |  4 | 4.063400 |
+| 2030-09-14 |  5 | 4.168301 |
+| 2030-09-14 | 10 | 4.389487 |
+
+Notice that the spot coupons for the 2-, 5-, and 10-year bonds match the calibration instrument coupons, and the 4-year rate (not a calibration target) is interpolated correctly.
+
+---
+
+## Problem 16: Forward Curve — An Improved Calibration Method
+
+The discount rate grid from our bootstrapper is very coarse, which can produce large jumps in rates. Develop an alternative calibrator that uses a step function with a finer grid (monthly or weekly intervals) to produce the same spot bond prices while penalizing large rate jumps. This new calibrator should minimize rate jumps via a penalty function, ensuring smoother transitions. You have a lot of freedom here — be creative.
+
+Apply this new curve with the coupon rate function from Problem 15. The output for spot calibration instruments should remain unchanged, but forward rates may differ significantly. Plot both the original and new forward curves to visualize the differences.
+
+In practice, the "knots" at the front end of the curve are often based on Federal Reserve meeting dates, where rate changes are expected. The back end typically follows a more regular structure with larger intervals.
+
+::: {.nb}
+**NB:** This will take considerably longer to run than your bootstrap.
+:::

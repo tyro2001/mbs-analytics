@@ -1,0 +1,39 @@
+project:
+  type: website
+
+website:
+  title: "Introduction to Mortgage Analytics"
+  description: "A progressive exercise set covering mortgage mathematics, MBS pricing, prepayment modeling, and Monte Carlo methods."
+  navbar:
+    left:
+      - text: "Home"
+        href: index.qmd
+      - text: "Exercises"
+        menu:
+          - text: "Part I: Mortgage Basics (1–4)"
+            href: part1.qmd
+          - text: "Part II: Prepayment & Dates (5–8)"
+            href: part2.qmd
+          - text: "Part III: Discounting & Pricing (9–12)"
+            href: part3.qmd
+          - text: "Part IV: Forward Curves (13–16)"
+            href: part4.qmd
+          - text: "Part V: Advanced Prepayment & Greeks (17–20)"
+            href: part5.qmd
+          - text: "Part VI: Monte Carlo (21–23)"
+            href: part6.qmd
+    right:
+      - icon: linkedin
+        href: https://www.linkedin.com/in/skipper-hartley-622a3617
+        aria-label: LinkedIn
+
+format:
+  html:
+    theme: cosmo
+    toc: true
+    toc-depth: 3
+    number-sections: false
+    smooth-scroll: true
+    highlight-style: github
+    html-math-method: mathjax
+    css: styles.css

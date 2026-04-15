@@ -1,0 +1,130 @@
+---
+title: "Part I: Mortgage Basics"
+subtitle: "Problems 1–4"
+---
+
+## Problem 1: Mortgage Payment
+
+The length of a loan is known as its **term**. Common terms include 15 and 30 years. We sometimes refer to an **original term** to differentiate it from the **remaining term**, which is the remaining life of an aged loan. For clarity:
+
+$$
+\text{term} = \text{original term} = \text{age} + \text{remaining term}
+$$
+
+A borrower must pay an interest rate for a mortgage, known as its **coupon**. For reasons that will be clear later, we will refer to the borrower's coupon as the **gross coupon**. This coupon is quoted as an annual rate, but we will always divide it by 12 (the number of months in a year) when computing owed interest. The interest owed is the loan balance at the beginning of the period times the coupon divided by 12.
+
+Given a term $M$ in months, a gross coupon $C$, and an initial loan amount $B$, derive a formula for the constant monthly payment $P$ such that:
+
+$$B(0) = B$$
+
+$$B(1) = B(0) \cdot (1 + C/12) - P$$
+
+$$\vdots$$
+
+$$B(t) = B(t-1) \cdot (1 + C/12) - P$$
+
+$$\vdots$$
+
+$$B(M) = 0$$
+
+::: {.nb}
+**NB:** If you haven't reviewed geometric series recently, you might want to revisit the topic.
+:::
+
+**Example Output:**
+
+| Term (Months) | Coupon (%) | Balance | Payment |
+|--------------:|-----------:|--------:|--------:|
+| 360 | 5.0 | 100 | 0.536822 |
+| 360 | 5.0 | 200 | 1.073643 |
+| 180 | 5.0 | 200 | 1.581587 |
+| 180 | 6.0 | 200 | 1.687714 |
+
+---
+
+## Problem 2: Balance Schedule
+
+Use the formula from Problem 1 to project the **scheduled** contractual information for the life of the mortgage. We use the term "scheduled" to indicate that the borrower doesn't prepay, fall behind on payments, or curtail the loan.
+
+Your output should include four columns:
+
+- The month, indexed from 0
+- The balance at each month
+- The balance (or principal) paydown at each month
+- The interest paid each month
+
+The vectors for months and balances will have one more entry than the vectors for interest paid and principal paydowns. To address this, align the latter two quantities with the periods in which they are paid, meaning the values for month zero should be zero.
+
+You can think about principal paydown in two ways:
+
+- The contractual payment less the interest owed
+- The change in the balance from one period to the next
+
+Given our assumptions, the second method is preferred because it is more convenient for future problems.
+
+**Example Output:**
+
+A 12-month mortgage with a 5% coupon and a balance of 250:
+
+| Age | Balance | PrincipalPayment | CouponPayment |
+|----:|--------:|-----------------:|--------------:|
+|  0  | 250.0000 | 0.0000 | 0.0000 |
+|  1  | 229.6398 | 20.3602 | 1.0417 |
+|  2  | 209.1948 | 20.4450 | 0.9568 |
+|  3  | 188.6645 | 20.5302 | 0.8716 |
+|  4  | 168.0488 | 20.6158 | 0.7861 |
+|  5  | 147.3471 | 20.7017 | 0.7002 |
+|  6  | 126.5592 | 20.7879 | 0.6139 |
+|  7  | 105.6846 | 20.8745 | 0.5273 |
+|  8  |  84.7231 | 20.9615 | 0.4404 |
+|  9  |  63.6743 | 21.0489 | 0.3530 |
+| 10  |  42.5377 | 21.1366 | 0.2653 |
+| 11  |  21.3131 | 21.2246 | 0.1772 |
+| 12  |   0.0000 | 21.3131 | 0.0888 |
+
+---
+
+## Problem 3: Mortgage Plots
+
+Create simple visualizations:
+
+- The mortgage balance over time
+- A comparison of the interest and principal paid over time
+
+---
+
+## Problem 4: Mortgage Backed Securities
+
+When creating a **Mortgage Backed Security** (MBS), a financial institution combines many "similar" loans into a single **pool** and sells them to an investor. In many cases, the institution creates a **Pass-Through** bond: they continue to collect the borrower's payments, take a small **Servicing Fee** (typically 0.25% of the pool balance), and pass the remaining amount to the investor. The investor is entitled to all the principal paid, but the servicing fee comes out of the interest. The **Net Coupon** is the gross coupon less the servicing fee (we assume all other fees are zero).
+
+::: {.nb}
+**NB:** Scheduled balances are computed with the gross coupon, but the interest paid to the investor is computed with the net coupon.
+:::
+
+It is convenient to think of a pool of loans as a single loan, where attributes such as the gross coupon are the balance-weighted average of the individual loans in the pool, and the balance is the sum of the individual balances.
+
+Assume the loan from the previous exercises is actually a pool. Add a new column representing the net interest paid to the investor, where the servicing fee is 0.25%.
+
+Further reading: [Mortgage-Backed Security (Wikipedia)](https://en.wikipedia.org/wiki/Mortgage-backed_security)
+
+**Example Output:**
+
+A 12-month MBS with a 5% gross coupon, 4.75% net coupon, and a balance of 250:
+
+| Age | Balance | PrincipalPayment | NetInterest |
+|----:|--------:|-----------------:|------------:|
+|  0  | 250.0000 |  0.0000 | 0.0000 |
+|  1  | 229.6398 | 20.3602 | 0.9896 |
+|  2  | 209.1948 | 20.4450 | 0.9090 |
+|  3  | 188.6645 | 20.5302 | 0.8281 |
+|  4  | 168.0488 | 20.6158 | 0.7468 |
+|  5  | 147.3471 | 20.7017 | 0.6652 |
+|  6  | 126.5592 | 20.7879 | 0.5832 |
+|  7  | 105.6846 | 20.8745 | 0.5010 |
+|  8  |  84.7231 | 20.9615 | 0.4183 |
+|  9  |  63.6743 | 21.0489 | 0.3354 |
+| 10  |  42.5377 | 21.1366 | 0.2520 |
+| 11  |  21.3131 | 21.2246 | 0.1684 |
+| 12  |   0.0000 | 21.3131 | 0.0844 |
+
+Notice that the balance and principal paid are identical to the previous problem while the interest is slightly lower.

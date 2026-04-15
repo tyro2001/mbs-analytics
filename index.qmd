@@ -1,0 +1,93 @@
+---
+title: "Introduction to Mortgage Analytics"
+subtitle: "A progressive exercise set in mortgage mathematics and fixed-income analytics"
+---
+
+<small>© 2025 Skipper Hartley. All rights reserved. Academic instructional use with attribution; commercial use requires permission.</small>
+
+---
+
+This set of exercises grew from a capstone project led with students from Emory University's [MSBA program](https://goizueta.emory.edu/msba). The original problems were designed to familiarize students with basic mortgage concepts under idealized conditions. The content has since expanded to cover fixed-rate bonds, forward curve calibration, prepayment modeling, and Monte Carlo pricing. This is a work in progress — future additions will include trinomial lattices, PCAs, and C++.
+
+## How to Use These Exercises
+
+Work through the problems in order. Each one builds on the last. Implement your solutions in Python, applying the industry practices described below.
+
+---
+
+## Industry Standards
+
+While solving these problems, use standard tools and techniques from the software industry:
+
+- [DevOps](https://en.wikipedia.org/wiki/DevOps)
+- [Coding standards](https://en.wikipedia.org/wiki/Coding_conventions)
+- [Git](https://en.wikipedia.org/wiki/Git)
+- [Code reviews](https://en.wikipedia.org/wiki/Code_review)
+- Automated testing (unit, regression, etc.)
+- Debuggers and [profilers](https://en.wikipedia.org/wiki/Profiling_(computer_programming))
+- VS Code, [Lint](https://en.wikipedia.org/wiki/Lint_(software)), CoPilot
+
+This is an opportunity to move from student to production coding.
+
+---
+
+## Clean Code Principles
+
+There are many excellent books on writing clean code. Here are key principles to guide you:
+
+- Put most logic in Python modules. Create a single top-level `demo.py` to demonstrate functionality.
+- Use well-named variables. They make code easier to read and reduce documentation burden.
+- Validate inputs — check that a divisor isn't zero, that a price is non-negative, etc.
+- Avoid [global variables](https://en.wikipedia.org/wiki/Global_variable), except for constants.
+- Strive for clarity and maintainability over raw speed. Write as if handing the code to someone else.
+- Avoid [premature optimization](https://en.wikipedia.org/wiki/Program_optimization). Let your profiler guide you.
+- Document your API. Does it feel like a natural interface to another programmer?
+- Do not use [magic numbers or strings](https://en.wikipedia.org/wiki/Magic_number_(programming)). Put them in named variables.
+- Do not copy and paste code. Refactor shared logic into functions. Keep your code DRY (Don't Repeat Yourself).
+- Separate IO from logic. Business logic should not depend on a particular data source.
+- Use [unit tests](https://en.wikipedia.org/wiki/Unit_testing). They are your safety net when refactoring.
+- Keep functions short — ideally no longer than a page.
+- Avoid computing the same thing twice. Move invariants outside loops.
+- Leverage [vectorization](https://en.wikipedia.org/wiki/Array_programming) via [NumPy](https://numpy.org/). Python loops are slow.
+- Think like a mathematician. Calculus can make your code cleaner and faster.
+- Track units. Are values decimal or percent? Confusion here causes hard-to-find bugs.
+- Use [docstrings](https://betterprogramming.pub/3-different-docstring-formats-for-python-d27be81e0d68). NumPy format is recommended.
+
+---
+
+## A Note on LLMs
+
+Do not overuse LLMs. The point of these exercises is to learn. Having an LLM solve the problems for you defeats the purpose. They are excellent as an advanced manual or documentation rough-draft generator — but the main logic should be yours.
+
+---
+
+## Assumptions
+
+Please review these periodically:
+
+- All mortgages are fixed-rate loans with no interest-only periods.
+- Payments are made on the first of each month, with no partial accruals or defaults.
+- The amount paid is either the scheduled payment or the full remaining balance plus interest. Curtailments are not modeled.
+- A pool consists of loans that are identical in balance, coupon, origination, and term.
+- No accrual period will start on a day of month greater than 28. This avoids month-end complications.
+- No special treatment for holidays or weekends.
+- If a settle date lands exactly at the end of an accrual period, the investor is not entitled to that period's cash flow.
+
+---
+
+## Contact
+
+All comments, corrections, and suggestions are welcome. Reach out via [LinkedIn](http://www.linkedin.com/in/skipper-hartley-622a3617).
+
+---
+
+## Exercise Sets
+
+| Part | Topics | Problems |
+|-----:|:-------|:--------:|
+| [I](part1.qmd) | Mortgage payment, balance schedule, plots, MBS basics | 1–4 |
+| [II](part2.qmd) | Prepayment (SMM), dates, payment delay, WAL | 5–8 |
+| [III](part3.qmd) | Zero coupon bonds, present value, price, OAS | 9–12 |
+| [IV](part4.qmd) | CMT cash flows, bootstrapping, forward bond rates, smooth curves | 13–16 |
+| [V](part5.qmd) | Improved prepayment model, negative convexity, DV01/convexity, multi-path | 17–20 |
+| [VI](part6.qmd) | Hull-White MC, MC valuation, antithetic variates | 21–23 |

@@ -1,0 +1,127 @@
+---
+title: "Part II: Prepayment & Dates"
+subtitle: "Problems 5–8"
+---
+
+## Problem 5: Prepayment
+
+Recall that we allow the borrower to [**prepay**](https://en.wikipedia.org/wiki/Prepayment_of_loan) their loan. There are a number of reasons why this may happen:
+
+- The borrower gets a job in a new city
+- The borrower finds a lower rate in the current market
+- The borrower outgrows (or downsizes from) their current home
+- The borrower takes out a new loan with a higher balance and pockets the difference (**Cash Out**)
+
+We referred to projected balances as "scheduled" in previous exercises because they don't include prepayments. The **Single Monthly Mortality** (SMM) rate is the percentage of the pool that prepays in a particular month. We use it to compute the fraction of the original pool that remains:
+
+$$pool(0) = 1$$
+
+$$pool(t) = pool(t-1) \cdot [1 - SMM(t-1)]$$
+
+We use this to project the *actual balance* ($B$):
+
+$$B(t) = \text{ScheduledBalance}(t) \cdot pool(t)$$
+
+Create a function that takes the term in months, gross coupon, net coupon, initial balance, and a vector of SMMs, and returns a time series including month, balance, net interest paid, and principal paid for a pass-through bond with prepayment.
+
+::: {.nb}
+**NB:** One cannot technically prepay in the period from $M-1$ to $M$ because all pools pay off at maturity under our assumptions.
+:::
+
+Try it out with:
+
+- Term of 180 months
+- Gross coupon of 7%
+- Net coupon of 6.75%
+- Initial balance of 100
+- $\text{SMM}(t)$:
+  - $\frac{t}{60} \times 0.01$ for $t < 60$
+  - $0.015 - \frac{t}{120} \times 0.01$ for $t \ge 60$
+
+::: {.nb}
+**NB:** The SMM function above produces a decimal value, not a percent.
+:::
+
+**Example Output:**
+
+| Month | Balance | PrincipalPayment | CouponPayment |
+|------:|--------:|-----------------:|--------------:|
+|     0 | 100.000000 |  0.000000 |   0.000000 |
+|     1 |  99.684505 |  0.315495 |   0.562500 |
+|     2 |  99.350609 |  0.333897 |   0.560725 |
+|   ... |       ... |        ... |         ... |
+|    59 |  58.485668 |  0.906208 |   0.334079 |
+|    60 |  57.579820 |  0.905848 |   0.328982 |
+|    61 |  56.674681 |  0.905140 |   0.323886 |
+|   ... |       ... |        ... |         ... |
+|   178 |   0.722526 |  0.358394 |   0.006080 |
+|   179 |   0.362253 |  0.360273 |   0.004064 |
+|   180 |   0.000000 |  0.362253 |   0.002038 |
+
+---
+
+## Problem 6: Dates
+
+We have been working in terms of months. Now we need to introduce dates. In quantitative finance we call the start date of the mortgage its **Origination** date and the end date its **Maturity**. Since our loans always pay on the first of every month, the origination date and the term uniquely determine the maturity.
+
+Update your existing code to include an origination date and add a column containing the running date associated with each month. Run your code on the MBS from Problem 5 with origination date of 10/1/2024.
+
+**Example Output:**
+
+| Month | AccrualDate | SMM | Balance | Principal | Interest |
+|------:|------------:|----:|--------:|----------:|---------:|
+|  0 | 10/1/2024 | 0.00000 | 100.00000 |  0.00000 | 0.00000 |
+|  1 | 11/1/2024 | 0.00017 |  99.68451 |  0.31549 | 0.56250 |
+|  2 | 12/1/2024 | 0.00033 |  99.35061 |  0.33390 | 0.56073 |
+| ... | ... | ... | ... | ... | ... |
+| 59 |  9/1/2029 | 0.00983 | 58.48567 | 0.90621 | 0.33408 |
+| 60 | 10/1/2029 | 0.01000 | 57.57982 | 0.90585 | 0.32898 |
+| 61 | 11/1/2029 | 0.00992 | 56.67468 | 0.90514 | 0.32389 |
+| ... | ... | ... | ... | ... | ... |
+| 178 |  8/1/2039 | 0.00017 | 0.72253 | 0.35839 | 0.00608 |
+| 179 |  9/1/2039 | 0.00008 | 0.36225 | 0.36027 | 0.00406 |
+| 180 | 10/1/2039 | 0.00000 | 0.00000 | 0.36225 | 0.00204 |
+
+---
+
+## Problem 7: Payment Delay
+
+The date column from Problem 6 contains **Accrual** dates — the dates used to compute interest owed. Our assumption has been that borrowers pay on the first of the month, and that remains true. However, there is a **payment delay** between when the servicer receives the borrower's payment and when it is forwarded to the MBS investor.
+
+Add a new column that records the MBS payment date, using a payment delay of 24 days.
+
+**Example Output:**
+
+| Month | AccrualDate | PaymentDate | Balance | PrincipalPayment | CouponPayment |
+|------:|------------:|------------:|--------:|-----------------:|--------------:|
+|   0 | 2024-10-01 | 2024-10-25 | 100.000000 |  0.000000 | 0.000000 |
+|   1 | 2024-11-01 | 2024-11-25 |  99.684505 |  0.315495 | 0.562500 |
+|   2 | 2024-12-01 | 2024-12-25 |  99.350609 |  0.333897 | 0.560725 |
+| ... | ... | ... | ... | ... | ... |
+|  59 | 2029-09-01 | 2029-09-25 |  58.485668 |  0.906208 | 0.334079 |
+|  60 | 2029-10-01 | 2029-10-25 |  57.579820 |  0.905848 | 0.328982 |
+|  61 | 2029-11-01 | 2029-11-25 |  56.674681 |  0.905140 | 0.323886 |
+| ... | ... | ... | ... | ... | ... |
+| 178 | 2039-08-01 | 2039-08-25 |   0.722526 |  0.358394 | 0.006080 |
+| 179 | 2039-09-01 | 2039-09-25 |   0.362253 |  0.360273 | 0.004064 |
+| 180 | 2039-10-01 | 2039-10-25 |   0.000000 |  0.362253 | 0.002038 |
+
+---
+
+## Problem 8: Weighted Average Life
+
+The common perception of a bond is one of a **bullet**, where the balance remains constant until maturity. A mortgage bond, however, **amortizes** throughout its life — the balance changes before maturity. For an amortizing bond, the **Weighted Average Life** (WAL) gives a sense of the average time it takes for the investor to receive all their principal back.
+
+Further reading: [Weighted-average life (Wikipedia)](https://en.wikipedia.org/wiki/Weighted-average_life)
+
+Write a function that takes a vector of balances, a vector of accrual dates, a vector of payment dates, and a reference date, and computes the WAL.
+
+### A note on the reference date
+
+The reference date is the trade **settle date** — the day the investor pays for and takes ownership of the bond. There is a subtlety about which future cash flows the investor owns. The investor is entitled to all cash flows based on the balance of the bond at time of purchase. For example, if one buys a bond on the 5th of the month and the payment delay is 24 days, the next cash flow falls on the 25th. The investor is *not* entitled to this cash flow because it is based on the previous month's balance.
+
+Assume 365 days in a year when computing the number of years between payment dates and the settle date.
+
+**Example Output:**
+
+WAL of the MBS from Problem 6 with settle date equal to origination: `6.580737`

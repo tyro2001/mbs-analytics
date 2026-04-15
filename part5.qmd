@@ -1,0 +1,163 @@
+---
+title: "Part V: Advanced Prepayment & Greeks"
+subtitle: "Problems 17–20"
+---
+
+## Problem 17: An Improved Prepayment Model
+
+Having constructed forward curves, we return to prepayment. At a high level, borrower prepayments are influenced by two primary drivers:
+
+1. **Refinance Incentive (Refi):** Borrowers refinance when market rates drop, allowing a new loan at a lower rate. This is highly sensitive to rate changes.
+2. **Demographics (Demo):** Life events — job relocation, retirement, family changes, downsizing — also drive prepayments. These are less rate-sensitive and more tied to the borrower's circumstances and the loan's age.
+
+### Primary Current Coupon Model
+
+The mortgage rate from the market is known as the **Primary Current Coupon** (PCC). To project it into the future, we use a simple model:
+
+$$
+PCC(t) = \text{DiscountRate}(t) + \text{PccSpread}
+$$
+
+where $\text{DiscountRate}(t)$ is the short rate and PccSpread is a fixed spread accounting for additional costs. Use **3.3%** as your spread.
+
+### Refi Model
+
+The refinance component is:
+
+$$
+\text{refi}(\text{spread}(t)) =
+\begin{cases}
+0 & \text{if } \text{spread} < 0 \\
+\text{slope} \cdot \text{spread} & \text{if } 0 \leq \text{spread} \leq 0.015 \\
+0.0425 & \text{if } \text{spread} > 0.015
+\end{cases}
+$$
+
+where:
+
+- $\text{slope} = \dfrac{0.0425}{0.015}$
+- $\text{spread}(t) = \text{GrossCoupon} - PCC(t)$
+
+### Demographic Model
+
+Demographic prepayments depend on loan age and seasonal trends:
+
+$$\text{demo}(t) = \text{seasoning}(\text{age}(t)) \cdot \text{seasonal}(\text{month\_of\_year}(t))$$
+
+- **Seasoning:** Prepayments ramp linearly from 0 to a base SMM over the first 18 months. Use **0.5%** as your base SMM.
+- **Seasonality:** Rates exhibit seasonal trends with summer peaks and winter dips. Use the monthly scalars below.
+
+```python
+SEASONAL_FACTORS_ARRAY = np.array([
+    0.75,  # January
+    0.84,  # February
+    0.93,  # March
+    1.02,  # April
+    1.11,  # May
+    1.20,  # June
+    1.20,  # July
+    1.11,  # August
+    1.02,  # September
+    0.93,  # October
+    0.84,  # November
+    0.75   # December
+])
+```
+
+### Combined Prepayment Model
+
+$$SMM(t) = \text{refi}(\text{spread}(t)) + \text{demo}(t)$$
+
+where $t$ is time in months from the first of the market close's month (e.g., if market close is 1/15/2024, then $t$ is measured from 1/1/2024).
+
+Implement the above. Run our 15-year MBS using the rates from Problem 10 with OAS of 3%. Then run the same MBS with discount rates shocked +0.5% and −0.5%. Plot the balances through time for each scenario.
+
+::: {.nb}
+**NB:** Changing OAS should not change cash flows. Shocking discount rates will change cash flows because PCC is a function of those rates. Make sure you verify this distinction.
+:::
+
+**Example Output:**
+
+`RateShock: 0.005`
+
+| SettleDate | Value | SettleBalance | Price | WAL |
+|-----------:|------:|--------------:|------:|----:|
+| 2024-10-01 |  97.475209 | 100.000000 |  97.475209 | 6.75 |
+| 2024-10-15 |  97.759249 | 100.000000 |  97.496749 | 6.71 |
+| 2024-11-10 |  97.413439 |  99.684505 |  97.552996 | 6.64 |
+| 2024-11-15 |  97.514587 |  99.684505 |  97.560714 | 6.63 |
+
+`RateShock: 0.0`
+
+| SettleDate | Value | SettleBalance | Price | WAL |
+|-----------:|------:|--------------:|------:|----:|
+| 2024-10-01 |  99.975784 | 100.000000 |  99.975784 | 5.06 |
+| 2024-10-15 | 100.247883 | 100.000000 |  99.985383 | 5.03 |
+| 2024-11-10 |  99.879479 |  99.684505 | 100.026841 | 4.95 |
+| 2024-11-15 |  99.976340 |  99.684505 | 100.030259 | 4.94 |
+
+`RateShock: -0.005`
+
+| SettleDate | Value | SettleBalance | Price | WAL |
+|-----------:|------:|--------------:|------:|----:|
+| 2024-10-01 | 101.347358 | 100.000000 | 101.347358 | 3.23 |
+| 2024-10-15 | 101.603703 | 100.000000 | 101.341203 | 3.19 |
+| 2024-11-10 | 100.884803 |  99.362828 | 101.362985 | 3.12 |
+| 2024-11-15 | 100.975723 |  99.362828 | 101.360738 | 3.10 |
+
+---
+
+## Problem 18: Negative Convexity
+
+You may have noticed that the owner of this MBS loses more money when the market moves against them than they gain when it moves in their favor. For example:
+
+| SettleDate | Shock | Value | ValueDiffFromBase | WAL |
+|-----------:|------:|------:|------------------:|----:|
+| 2024-10-01 |  +0.5% |  97.475209 | −2.500575 | 6.75 |
+| 2024-10-01 |   0.0% |  99.975784 |  0.000000 | 5.06 |
+| 2024-10-01 |  −0.5% | 101.347358 | +1.371574 | 3.23 |
+
+In the fixed-income world, this is known as **Negative Convexity**. It arises because the MBS owner is effectively long a fixed-income amortizing bond while being short an [American option](https://en.wikipedia.org/wiki/Option_style#American_and_European_options) that allows for prepayment.
+
+Run your MBS on an array of discount rate shocks from −1.5% to +1.5% in 10 basis point increments with OAS of 3%. Plot the values using the 10/1/2024 settle date, with shocks on the X-axis and values on the Y-axis.
+
+---
+
+## Problem 19: Derivatives
+
+The [Taylor series](https://en.wikipedia.org/wiki/Taylor_series) gives us a second-order approximation to the change in MBS value given a change in rates.
+
+The first derivative with respect to rates is the **Dollar Value of an 01** (DV01). These exercises use 1% as the shift amount.
+
+$$DV01 = \frac{V(\text{up}) - V(\text{dn})}{2 \cdot \text{shock}}$$
+
+The second derivative is **convexity** (or gamma):
+
+$$\text{Convexity} = \frac{V(\text{up}) + V(\text{dn}) - 2 \cdot V(\text{mid})}{\text{shock}^2}$$
+
+where $V(\text{mid})$ is the base value (shock = 0).
+
+**Example Output:**
+
+Define the target as the value of our 15-year MBS under a 15 basis point shock. Run a grid of shocks to compare the second-order Taylor expansion against the true value.
+
+| Shock (%) | DV01 | Convexity | Base | Target | 2nd Order | Error |
+|----------:|-----:|----------:|-----:|-------:|----------:|------:|
+| 0.0100 | −4.019408 | −6.665465 | 99.975784 | 99.315381 | 99.297886 | −0.017495 |
+| 0.1000 | −4.018581 | −5.173302 | 99.975784 | 99.315381 | 99.314797 | −0.000584 |
+| 0.2000 | −4.015611 | −5.081801 | 99.975784 | 99.315381 | 99.316272 |  0.000891 |
+| 0.3000 | −4.000887 | −4.954105 | 99.975784 | 99.315381 | 99.319917 |  0.004536 |
+| 0.4000 | −3.950297 | −4.755959 | 99.975784 | 99.315381 | 99.329735 |  0.014354 |
+| 0.5000 | −3.872149 | −4.516003 | 99.975784 | 99.315381 | 99.344156 |  0.028776 |
+
+---
+
+## Problem 20: Multi-Path Valuation
+
+Running our MBS along the rates from the step function above, your bootstrapped curve, and your smoother curve will each produce a different value. Worse, none individually captures the value of the optionality embedded in the security. We want to run a large number of possible trajectories through time and compute value as the average of the per-trajectory values.
+
+Write a function that takes a vector of dates, a matrix of discount rate trajectories, and computes the value of our standard MBS with OAS of 3%. For this problem, your paths are: the original rates, a +50bp shock, and a −50bp shock. Although there are only three paths here, write your code to handle an arbitrary number.
+
+**Example Output:**
+
+`99.59945`

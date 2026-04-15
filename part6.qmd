@@ -1,0 +1,193 @@
+---
+title: "Part VI: Monte Carlo"
+subtitle: "Problems 21–23 (Problem 24 under construction)"
+---
+
+## Problem 21: Monte Carlo Paths via Hull-White
+
+To generate Monte Carlo paths of rates we use the classic [Hull-White model](https://en.wikipedia.org/wiki/Hull%E2%80%93White_model) for short rates.
+
+---
+
+### The One-Factor Hull-White Model
+
+The **one-factor Hull-White model** describes the evolution of short-term interest rates $r(t)$ via the stochastic differential equation (SDE):
+
+$$dr(t) = [\theta(t) - \alpha r(t)]\, dt + \sigma\, dW(t)$$
+
+**Key components:**
+
+1. **Mean Reversion:** The term $-\alpha r(t)$ pulls $r(t)$ toward a time-dependent mean. $\alpha > 0$ is the mean reversion speed.
+2. **Volatility:** $\sigma$ is the volatility of the short rate, scaled by [Brownian motion](https://en.wikipedia.org/wiki/Brownian_motion) $W(t)$.
+3. **Time-Dependent Drift** $\theta(t)$: Ensures the model fits the initial term structure of interest rates.
+
+### Discretization
+
+Using the Euler-Maruyama scheme:
+
+$$r_{t+\Delta t} = r_t + (\theta(t) - \alpha r_t)\,\Delta t + \sigma \sqrt{\Delta t}\, Z_t$$
+
+where:
+
+- $r_t$: Short rate from your forward curve at time $t$
+- $\Delta t$: Time step size
+- $Z_t \sim \mathcal{N}(0, 1)$: Standard normal draw
+
+To compute $\theta(t_i)$:
+
+$$\theta(t_i) = \frac{f_{t_{i+1}} - f_{t_i}}{\Delta t} + \alpha f_{t_i} + \frac{\sigma^2}{2\alpha}\left(1 - e^{-2\alpha t_i}\right)$$
+
+where $f_t$ is the continuously compounded forward rate from your forward curve. Choose your grid so that $t$ always hits a knot point on your step discount rate function — no interpolation required.
+
+### Stochastic Discount Factors
+
+Each Monte Carlo path produces a rate function that can be used to discount future cash flows. Our discount factors are now **stochastic** (SDF). The SDFs are *not* zero coupon bonds. However, the average of pathwise SDFs equals the corresponding ZCB:
+
+$$ZCB(t, T) = \mathbb{E}[\text{SDF}(t, T)] = \mathbb{E}\!\left[e^{-\int_t^T r(u)\,du}\right]$$
+
+### Steps for Simulation
+
+1. **Initialize:** Set the starting short rate $r_0$ from the initial rate of your forward curve.
+2. **Iterate:** For each time step, compute $r_{t+\Delta t}$ using the discretized equation.
+3. **Simulate paths:** Repeat across multiple paths by drawing independent $Z_t$ for each.
+4. **Aggregate:** Use the simulated paths to compute expectations, price derivatives, or analyze rate distributions.
+
+::: {.nb}
+**NB:** Smaller $\Delta t$ improves accuracy but increases computational cost. Variance reduction techniques are explored in Problem 23.
+:::
+
+### Verification Checks
+
+**Example Output:**
+
+Results for a 28-day ($28/365$ year) time step grid with $\sigma = 0.01$ and $\alpha = 0.03$:
+
+The variance of the simulated short rate $r_t$ should be approximately:
+$$\frac{\sigma^2}{2\alpha}\left(1 - e^{-2\alpha t}\right)$$
+
+The variance of SDF($t$) should be approximately:
+$$\left(\frac{\sigma}{\alpha}\right)^2 \left(t + \frac{2}{\alpha}e^{-\alpha t} - \frac{1}{2\alpha}e^{-2\alpha t} - \frac{3}{2\alpha}\right)$$
+
+| NumPaths | TimeToMaturity | TargetVar(r) | McVar(r) | TargetZcbPrice | McZcbPrice | TargetVar(SDF) | McVar(SDF) |
+|---------:|---------------:|-------------:|---------:|---------------:|-----------:|---------------:|-----------:|
+|   1000 | 1.00 | 0.000097 | 0.000096 | 0.962030 | 0.962361 | 0.000030 | 0.000025 |
+|   1000 | 1.99 | 0.000188 | 0.000201 | 0.932338 | 0.933088 | 0.000220 | 0.000214 |
+|   1000 | 2.99 | 0.000274 | 0.000271 | 0.902665 | 0.903766 | 0.000681 | 0.000686 |
+|   1000 | 3.99 | 0.000355 | 0.000361 | 0.872635 | 0.873902 | 0.001476 | 0.001477 |
+|   2000 | 1.00 | 0.000097 | 0.000100 | 0.962030 | 0.962081 | 0.000030 | 0.000027 |
+|   2000 | 1.99 | 0.000188 | 0.000199 | 0.932338 | 0.932319 | 0.000220 | 0.000217 |
+|   2000 | 2.99 | 0.000274 | 0.000281 | 0.902665 | 0.902655 | 0.000681 | 0.000687 |
+|   2000 | 3.99 | 0.000355 | 0.000363 | 0.872635 | 0.872605 | 0.001476 | 0.001493 |
+|   8000 | 1.00 | 0.000097 | 0.000096 | 0.962030 | 0.962012 | 0.000030 | 0.000026 |
+|   8000 | 1.99 | 0.000188 | 0.000189 | 0.932338 | 0.932341 | 0.000220 | 0.000207 |
+|   8000 | 2.99 | 0.000274 | 0.000280 | 0.902665 | 0.902763 | 0.000681 | 0.000660 |
+|   8000 | 3.99 | 0.000355 | 0.000360 | 0.872635 | 0.872882 | 0.001476 | 0.001456 |
+|  40000 | 1.00 | 0.000097 | 0.000096 | 0.962030 | 0.962047 | 0.000030 | 0.000026 |
+|  40000 | 1.99 | 0.000188 | 0.000189 | 0.932338 | 0.932413 | 0.000220 | 0.000206 |
+|  40000 | 2.99 | 0.000274 | 0.000277 | 0.902665 | 0.902869 | 0.000681 | 0.000656 |
+|  40000 | 3.99 | 0.000355 | 0.000355 | 0.872635 | 0.872996 | 0.001476 | 0.001444 |
+
+Covariance matrix of simulated discount factors (14-day grid, 32,000 paths):
+
+| TermInYears |   1.00 |   2.99 |   4.99 |  10.01 |
+|------------:|-------:|-------:|-------:|-------:|
+|   1.00 | 0.000028 | 0.000102 | 0.000162 | 0.000253 |
+|   2.99 | 0.000102 | 0.000657 | 0.001197 | 0.002065 |
+|   4.99 | 0.000162 | 0.001197 | 0.002555 | 0.004957 |
+|  10.01 | 0.000253 | 0.002065 | 0.004957 | 0.012803 |
+
+---
+
+## Problem 22: Monte Carlo Valuation
+
+Use your Hull-White paths to compute the values and variances of the calibration CMTs up to 10 years, and our 15-year MBS with an OAS of 2.52%. Focus on spot values only (settle date = market close).
+
+**Example Output:**
+
+| NumPaths | Type | TermYears | WAL | Value | Variance |
+|---------:|-----:|----------:|----:|------:|---------:|
+|  1,000 | CMT |  1 | 1.000 | 100.002719 |   0.312199 |
+|  1,000 | CMT |  2 | 2.000 |  99.989946 |   2.531638 |
+|  1,000 | CMT |  3 | 3.000 |  99.968214 |   8.053168 |
+|  1,000 | CMT |  5 | 5.003 |  99.966151 |  32.771603 |
+|  1,000 | CMT |  7 | 7.003 |  99.990009 |  79.284107 |
+|  1,000 | CMT | 10 | 10.005 | 100.046634 | 185.496053 |
+|  1,000 | MBS | 15 |  4.474 |  99.930137 |  17.299542 |
+|  2,000 | CMT |  1 | 1.000 |  99.992861 |   0.299608 |
+|  2,000 | CMT |  2 | 2.000 |  99.984889 |   2.389282 |
+|  2,000 | CMT |  3 | 3.000 |  99.998621 |   7.618624 |
+|  2,000 | CMT |  5 | 5.003 | 100.066228 |  31.486546 |
+|  2,000 | CMT |  7 | 7.003 | 100.106888 |  76.757860 |
+|  2,000 | CMT | 10 | 10.005 | 100.259021 | 183.445264 |
+|  2,000 | MBS | 15 |  4.462 | 100.020413 |  16.372639 |
+|  8,000 | CMT |  1 | 1.000 | 100.003376 |   0.300735 |
+|  8,000 | CMT |  2 | 2.000 | 100.008034 |   2.334574 |
+|  8,000 | CMT |  3 | 3.000 | 100.019890 |   7.454264 |
+|  8,000 | CMT |  5 | 5.003 | 100.085877 |  30.669693 |
+|  8,000 | CMT |  7 | 7.003 | 100.142939 |  73.846420 |
+|  8,000 | CMT | 10 | 10.005 | 100.228962 | 176.516454 |
+|  8,000 | MBS | 15 |  4.447 | 100.056728 |  15.929860 |
+| 32,000 | CMT |  1 | 1.000 |  99.998982 |   0.298922 |
+| 32,000 | CMT |  2 | 2.000 |  99.997195 |   2.311157 |
+| 32,000 | CMT |  3 | 3.000 | 100.001817 |   7.376132 |
+| 32,000 | CMT |  5 | 5.003 | 100.029253 |  30.170537 |
+| 32,000 | CMT |  7 | 7.003 | 100.043481 |  72.466475 |
+| 32,000 | CMT | 10 | 10.005 | 100.050440 | 173.539116 |
+| 32,000 | MBS | 15 |  4.469 | 100.021723 |  15.748821 |
+
+---
+
+## Problem 23: Antithetic Variates
+
+Looking at the results above, you may notice that the variances can be quite high and Monte Carlo values are a bit off from the forward curve results. [Antithetic variates](https://en.wikipedia.org/wiki/Antithetic_variates) is a simple and elegant variance reduction technique. If we ask for 100 paths, we draw 50 and add 50 more that are the negatives of the original 50.
+
+For example, if the first path of draws from the standard normal is:
+
+`.5, -.25, .01, .02, ...`
+
+we negate each entry to get:
+
+`-.5, .25, -.01, -.02, ...`
+
+Update your code, rerun the securities with antithetics, and compare results. Use the correct equation for antithetic variance.
+
+**Example Output:**
+
+| NumPaths | Type | TermYears | WAL | Value | Variance |
+|---------:|-----:|----------:|----:|------:|---------:|
+|  1,000 | CMT |  1 | 1.000 | 100.000575 |  0.175218 |
+|  1,000 | CMT |  2 | 2.000 | 100.001801 |  1.477853 |
+|  1,000 | CMT |  3 | 3.000 | 100.005648 |  4.565389 |
+|  1,000 | CMT |  5 | 5.003 | 100.017722 | 17.285937 |
+|  1,000 | CMT |  7 | 7.003 | 100.048776 | 40.019543 |
+|  1,000 | CMT | 10 | 10.005 | 100.078423 | 92.671952 |
+|  1,000 | MBS | 15 |  4.464 |  99.953896 |  8.803280 |
+|  2,000 | CMT |  1 | 1.000 | 100.000518 |  0.170716 |
+|  2,000 | CMT |  2 | 2.000 | 100.001171 |  1.305828 |
+|  2,000 | CMT |  3 | 3.000 | 100.004121 |  4.116933 |
+|  2,000 | CMT |  5 | 5.003 | 100.014301 | 16.547688 |
+|  2,000 | CMT |  7 | 7.003 | 100.036048 | 39.410150 |
+|  2,000 | CMT | 10 | 10.005 | 100.066127 | 92.339302 |
+|  2,000 | MBS | 15 |  4.471 |  99.952716 |  8.462753 |
+|  8,000 | CMT |  1 | 1.000 | 100.000460 |  0.152373 |
+|  8,000 | CMT |  2 | 2.000 | 100.000190 |  1.190458 |
+|  8,000 | CMT |  3 | 3.000 | 100.001229 |  3.813321 |
+|  8,000 | CMT |  5 | 5.003 | 100.003921 | 15.520506 |
+|  8,000 | CMT |  7 | 7.003 | 100.008564 | 37.483392 |
+|  8,000 | CMT | 10 | 10.005 | 100.002044 | 89.300932 |
+|  8,000 | MBS | 15 |  4.471 | 100.009919 |  8.106373 |
+| 32,000 | CMT |  1 | 1.000 | 100.000461 |  0.149786 |
+| 32,000 | CMT |  2 | 2.000 | 100.000085 |  1.155985 |
+| 32,000 | CMT |  3 | 3.000 | 100.000643 |  3.685573 |
+| 32,000 | CMT |  5 | 5.003 | 100.000206 | 15.281389 |
+| 32,000 | CMT |  7 | 7.003 |  99.998306 | 36.894246 |
+| 32,000 | CMT | 10 | 10.005 |  99.994816 | 88.968431 |
+| 32,000 | MBS | 15 |  4.475 | 100.009464 |  8.010200 |
+
+---
+
+## Problem 24: Trinomial Lattices
+
+::: {.under-construction}
+**Under Construction** — coming in a future update.
+:::

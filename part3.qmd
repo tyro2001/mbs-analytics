@@ -1,0 +1,149 @@
+---
+title: "Part III: Discounting & Pricing"
+subtitle: "Problems 9–12"
+---
+
+## Problem 9: Zero Coupon Bonds
+
+Consider a bank account that accrues interest continuously at rate $r$. If we invest $B(0)$ dollars today, after two years we have:
+
+$$B(2) = B(0) \cdot e^{2r}$$
+
+which implies:
+
+$$B(0) = \frac{1}{e^{2r}} = e^{-2r}$$
+
+$B(0)$ is today's value of a dollar paid two years in the future. It is also the price of a **Zero Coupon Bond** (ZCB) — a bond that pays one dollar at maturity but accrues no interest during its life.
+
+ZCBs are closely related to **Discount Factors** (DFs). In general, if we have a function $r(t)$ that produces continuously compounded discount rates, the discount factor for the period from $t$ to $T$ is:
+
+$$DF(t, T) = e^{-\int_t^T r(u)\, du}$$
+
+In the special case where $r(u)$ comes from a forward curve, the ZCB and DF are equivalent. We will revisit this distinction in future exercises.
+
+::: {.nb}
+**NB:** $ZCB(t, T) = \dfrac{ZCB(0, T)}{ZCB(0, t)}$
+:::
+
+Implement a function that computes ZCBs at arbitrary dates greater than or equal to market close. You will pass it $r(t)$, which for now we assume is a step function. We also assume 365 days in a year. Use the rates provided in the code block below and assume the knots are the first of every month starting at 10/1/2024.
+
+```python
+import numpy as np
+
+def short_rates():
+    discount_rates = np.array([
+        0.040861075, 0.040759356, 0.040585068, 0.040325820, 0.039980431, 0.039554176,
+        0.039042074, 0.038446557, 0.037766254, 0.037002718, 0.036154661, 0.035225321,
+        0.034238589, 0.033344373, 0.032562165, 0.031897518, 0.031350018, 0.030912406,
+        0.030591328, 0.030384055, 0.030292503, 0.030314527, 0.030452173, 0.030703158,
+        # ... (full array in notebook)
+    ])
+    return discount_rates
+```
+
+**Example Output:**
+
+| Date | ZCB |
+|-----:|----:|
+| 2024-10-01 | 1.000000 |
+| 2024-11-01 | 0.996536 |
+| 2027-02-15 | 0.921187 |
+| 2039-10-15 | 0.546567 |
+
+---
+
+## Problem 10: Present Value
+
+Now that we can compute ZCBs, we can compute the time-$t$ value $V(t)$ by taking the dot product of the vector of future cash flows with a vector of ZCBs corresponding to the payment dates (not accrual dates) relative to time $t$.
+
+The basic steps are:
+
+1. Use the settle and accrual dates to determine which cash flows the investor purchased
+2. Use the settle date to determine $t$ for discounting
+3. For each relevant payment date $T_n$, compute $ZCB(t, T_n)$
+4. Take the dot product of your cash flow and ZCB vectors to compute $V(t)$
+
+When $t > 0$, the quantity computed is called a **forward value** — the number of dollars at which one would buy or sell the instrument at time $t$.
+
+Create a function that implements the algorithm above.
+
+**Example Output:**
+
+Assuming the following cash flow schedule:
+
+| Accrual Date | Payment Date | Payment Amount |
+|-------------:|-------------:|---------------:|
+| 10/1/2024 | 10/25/2024 | 0.0 |
+| 11/1/2024 | 11/25/2024 | 5.0 |
+| 12/1/2024 | 12/25/2024 | 7.0 |
+|  1/1/2025 |  1/25/2025 | 9.0 |
+
+Your code should produce:
+
+| Settle Date | Value |
+|------------:|------:|
+| 2024-10-01 | 20.787710 |
+| 2024-10-15 | 20.820315 |
+| 2024-11-10 | 15.889320 |
+| 2024-11-15 | 15.898194 |
+
+---
+
+## Problem 11: Price
+
+In Problem 10 we computed the present value of all future cash flows relative to the trade settle date. Now we want to compute how the bond price would be quoted in the market, ultimately arriving at the **clean price**.
+
+First, normalize the value by multiplying by 100 and dividing by the balance at the settle date. This gives the **dirty price**:
+
+$$\text{Dirty Price} = \text{Value} \times \frac{100}{\text{Balance at Settle}}$$
+
+For background on clean and dirty prices, and accrued interest, see:
+
+- [Dirty Price (Wikipedia)](https://en.wikipedia.org/wiki/Dirty_price)
+- [Clean Price (Wikipedia)](https://en.wikipedia.org/wiki/Clean_price)
+- [Day Count Convention (Wikipedia)](https://en.wikipedia.org/wiki/Day_count_convention)
+
+Our bond uses the **30/360** day count method. Compute the interest accrued from the partial period running from the first of the trade settle month to the trade settle date. Excel's `DAYS360` function is a useful reference.
+
+**Task:** Write a function that computes the simplest 30/360 method (Bond Basis) described on Wikipedia, and use it to convert a dirty value to a clean price.
+
+**Example Output:**
+
+Results on our 15-year MBS:
+
+| SettleDate | Value | SettleBalance | Price | WAL |
+|-----------:|------:|--------------:|------:|----:|
+| 2024-10-01 | 116.990377 | 100.000000 | 116.990377 | 6.58 |
+| 2024-10-15 | 117.173877 | 100.000000 | 116.911377 | 6.54 |
+| 2024-11-10 | 116.638606 |  99.684505 | 116.839009 | 6.47 |
+| 2024-11-15 | 116.703749 |  99.684505 | 116.810609 | 6.46 |
+
+---
+
+## Problem 12: Option Adjusted Spread
+
+The prices generated using the above logic often differ from market-observed MBS prices. To reconcile this, an [**Option Adjusted Spread**](https://en.wikipedia.org/wiki/Option-adjusted_spread) (OAS) is added to the discount rates.
+
+For simplicity, work with values rather than prices. Given a discount date grid, discount rate grid, settlement date, cash flows, and a target value, write a function to compute the OAS that aligns the computed price with the target value.
+
+::: {.nb}
+**NB:** This involves discounting only. It does not change cash flows. The OAS is a constant spread applied to the continuously compounded discount rates. Since spreads may vary across securities, do not adjust the discount rates directly.
+:::
+
+::: {.nb}
+**NB:** A technical simplification is made for forward settles. The forward value equation used here is:
+$$V(t, OAS) = \frac{V(0, OAS)}{ZCB(t, OAS)}$$
+rather than the technically correct:
+$$V(t, OAS) = \frac{V(0, OAS)}{ZCB(t, 0)}$$
+:::
+
+**Example Output:**
+
+Results for our 15-year MBS with target value of 100:
+
+| SettleDate | OAS% |
+|-----------:|-----:|
+| 2024-10-01 | 3.014598 |
+| 2024-10-15 | 3.069382 |
+| 2024-11-10 | 2.995488 |
+| 2024-11-15 | 3.015123 |
