@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.37">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Part II: Prepayment &amp; Dates – Introduction to Mortgage Analytics</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-acf12a64177840b8d86f2d4f01b2e9fb.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-09bcd2438ddda8166a810b4ec224e0a2.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<style>html{ scroll-behavior: smooth; }</style>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="styles.css">
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="./index.html">
+    <span class="navbar-title">Introduction to Mortgage Analytics</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="./index.html"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-exercises" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Exercises</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-exercises">    
+        <li>
+    <a class="dropdown-item" href="./part1.html">
+ <span class="dropdown-text">Part I: Mortgage Basics (1–4)</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./part2.html">
+ <span class="dropdown-text">Part II: Prepayment &amp; Dates (5–8)</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./part3.html">
+ <span class="dropdown-text">Part III: Discounting &amp; Pricing (9–12)</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./part4.html">
+ <span class="dropdown-text">Part IV: Forward Curves (13–16)</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./part5.html">
+ <span class="dropdown-text">Part V: Advanced Prepayment &amp; Greeks (17–20)</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./part6.html">
+ <span class="dropdown-text">Part VI: Monte Carlo (21–23)</span></a>
+  </li>  
+    </ul>
+  </li>
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://www.linkedin.com/in/skipper-hartley-622a3617"> <i class="bi bi-linkedin" role="img" aria-label="LinkedIn">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#problem-5-prepayment" id="toc-problem-5-prepayment" class="nav-link active" data-scroll-target="#problem-5-prepayment">Problem 5: Prepayment</a></li>
+  <li><a href="#problem-6-dates" id="toc-problem-6-dates" class="nav-link" data-scroll-target="#problem-6-dates">Problem 6: Dates</a></li>
+  <li><a href="#problem-7-payment-delay" id="toc-problem-7-payment-delay" class="nav-link" data-scroll-target="#problem-7-payment-delay">Problem 7: Payment Delay</a></li>
+  <li><a href="#problem-8-weighted-average-life" id="toc-problem-8-weighted-average-life" class="nav-link" data-scroll-target="#problem-8-weighted-average-life">Problem 8: Weighted Average Life</a>
+  <ul class="collapse">
+  <li><a href="#a-note-on-the-reference-date" id="toc-a-note-on-the-reference-date" class="nav-link" data-scroll-target="#a-note-on-the-reference-date">A note on the reference date</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Part II: Prepayment &amp; Dates</h1>
+<p class="subtitle lead">Problems 5–8</p>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="problem-5-prepayment" class="level2">
+<h2 class="anchored" data-anchor-id="problem-5-prepayment">Problem 5: Prepayment</h2>
+<p>Recall that we allow the borrower to <a href="https://en.wikipedia.org/wiki/Prepayment_of_loan"><strong>prepay</strong></a> their loan. There are a number of reasons why this may happen:</p>
+<ul>
+<li>The borrower gets a job in a new city</li>
+<li>The borrower finds a lower rate in the current market</li>
+<li>The borrower outgrows (or downsizes from) their current home</li>
+<li>The borrower takes out a new loan with a higher balance and pockets the difference (<strong>Cash Out</strong>)</li>
+</ul>
+<p>We referred to projected balances as “scheduled” in previous exercises because they don’t include prepayments. The <strong>Single Monthly Mortality</strong> (SMM) rate is the percentage of the pool that prepays in a particular month. We use it to compute the fraction of the original pool that remains:</p>
+<p><span class="math display">\[pool(0) = 1\]</span></p>
+<p><span class="math display">\[pool(t) = pool(t-1) \cdot [1 - SMM(t-1)]\]</span></p>
+<p>We use this to project the <em>actual balance</em> (<span class="math inline">\(B\)</span>):</p>
+<p><span class="math display">\[B(t) = \text{ScheduledBalance}(t) \cdot pool(t)\]</span></p>
+<p>Create a function that takes the term in months, gross coupon, net coupon, initial balance, and a vector of SMMs, and returns a time series including month, balance, net interest paid, and principal paid for a pass-through bond with prepayment.</p>
+<div class="nb">
+<p><strong>NB:</strong> One cannot technically prepay in the period from <span class="math inline">\(M-1\)</span> to <span class="math inline">\(M\)</span> because all pools pay off at maturity under our assumptions.</p>
+</div>
+<p>Try it out with:</p>
+<ul>
+<li>Term of 180 months</li>
+<li>Gross coupon of 7%</li>
+<li>Net coupon of 6.75%</li>
+<li>Initial balance of 100</li>
+<li><span class="math inline">\(\text{SMM}(t)\)</span>:
+<ul>
+<li><span class="math inline">\(\frac{t}{60} \times 0.01\)</span> for <span class="math inline">\(t &lt; 60\)</span></li>
+<li><span class="math inline">\(0.015 - \frac{t}{120} \times 0.01\)</span> for <span class="math inline">\(t \ge 60\)</span></li>
+</ul></li>
+</ul>
+<div class="nb">
+<p><strong>NB:</strong> The SMM function above produces a decimal value, not a percent.</p>
+</div>
+<p><strong>Example Output:</strong></p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: right;">Month</th>
+<th style="text-align: right;">Balance</th>
+<th style="text-align: right;">PrincipalPayment</th>
+<th style="text-align: right;">CouponPayment</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">100.000000</td>
+<td style="text-align: right;">0.000000</td>
+<td style="text-align: right;">0.000000</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">99.684505</td>
+<td style="text-align: right;">0.315495</td>
+<td style="text-align: right;">0.562500</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">99.350609</td>
+<td style="text-align: right;">0.333897</td>
+<td style="text-align: right;">0.560725</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">…</td>
+<td style="text-align: right;">…</td>
+<td style="text-align: right;">…</td>
+<td style="text-align: right;">…</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">59</td>
+<td style="text-align: right;">58.485668</td>
+<td style="text-align: right;">0.906208</td>
+<td style="text-align: right;">0.334079</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">60</td>
+<td style="text-align: right;">57.579820</td>
+<td style="text-align: right;">0.905848</td>
+<td style="text-align: right;">0.328982</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">61</td>
+<td style="text-align: right;">56.674681</td>
+<td style="text-align: right;">0.905140</td>
+<td style="text-align: right;">0.323886</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">…</td>
+<td style="text-align: right;">…</td>
+<td style="text-align: right;">…</td>
+<td style="text-align: right;">…</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">178</td>
+<td style="text-align: right;">0.722526</td>
+<td style="text-align: right;">0.358394</td>
+<td style="text-align: right;">0.006080</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">179</td>
+<td style="text-align: right;">0.362253</td>
+<td style="text-align: right;">0.360273</td>
+<td style="text-align: right;">0.004064</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">180</td>
+<td style="text-align: right;">0.000000</td>
+<td style="text-align: right;">0.362253</td>
+<td style="text-align: right;">0.002038</td>
+</tr>
+</tbody>
+</table>
+<hr>
+</section>
+<section id="problem-6-dates" class="level2">
+<h2 class="anchored" data-anchor-id="problem-6-dates">Problem 6: Dates</h2>
+<p>We have been working in terms of months. Now we need to introduce dates. In quantitative finance we call the start date of the mortgage its <strong>Origination</strong> date and the end date its <strong>Maturity</strong>. Since our loans always pay on the first of every month, the origination date and the term uniquely determine the maturity.</p>
+<p>Update your existing code to include an origination date and add a column containing the running date associated with each month. Run your code on the MBS from Problem 5 with origination date of 10/1/2024.</p>
+<p><strong>Example Output:</strong></p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: right;">Month</th>
+<th style="text-align: right;">AccrualDate</th>
+<th style="text-align: right;">SMM</th>
+<th style="text-align: right;">Balance</th>
+<th style="text-align: right;">Principal</th>
+<th style="text-align: right;">Interest</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">10/1/2024</td>
+<td style="text-align: right;">0.00000</td>
+<td style="text-align: right;">100.00000</td>
+<td style="text-align: right;">0.00000</td>
+<td style="text-align: right;">0.00000</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">11/1/2024</td>
+<td style="text-align: right;">0.00017</td>
+<td style="text-align: right;">99.68451</td>
+<td style="text-align: right;">0.31549</td>
+<td style="text-align: right;">0.56250</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">12/1/2024</td>
+<td style="text-align: right;">0.00033</td>
+<td style="text-align: right;">99.35061</td>
+<td style="text-align: right;">0.33390</td>
+<td style="text-align: right;">0.56073</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">…</td>
+<td style="text-align: right;">…</td>
+<td style="text-align: right;">…</td>
+<td style="text-align: right;">…</td>
+<td style="text-align: right;">…</td>
+<td style="text-align: right;">…</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">59</td>
+<td style="text-align: right;">9/1/2029</td>
+<td style="text-align: right;">0.00983</td>
+<td style="text-align: right;">58.48567</td>
+<td style="text-align: right;">0.90621</td>
+<td style="text-align: right;">0.33408</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">60</td>
+<td style="text-align: right;">10/1/2029</td>
+<td style="text-align: right;">0.01000</td>
+<td style="text-align: right;">57.57982</td>
+<td style="text-align: right;">0.90585</td>
+<td style="text-align: right;">0.32898</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">61</td>
+<td style="text-align: right;">11/1/2029</td>
+<td style="text-align: right;">0.00992</td>
+<td style="text-align: right;">56.67468</td>
+<td style="text-align: right;">0.90514</td>
+<td style="text-align: right;">0.32389</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">…</td>
+<td style="text-align: right;">…</td>
+<td style="text-align: right;">…</td>
+<td style="text-align: right;">…</td>
+<td style="text-align: right;">…</td>
+<td style="text-align: right;">…</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">178</td>
+<td style="text-align: right;">8/1/2039</td>
+<td style="text-align: right;">0.00017</td>
+<td style="text-align: right;">0.72253</td>
+<td style="text-align: right;">0.35839</td>
+<td style="text-align: right;">0.00608</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">179</td>
+<td style="text-align: right;">9/1/2039</td>
+<td style="text-align: right;">0.00008</td>
+<td style="text-align: right;">0.36225</td>
+<td style="text-align: right;">0.36027</td>
+<td style="text-align: right;">0.00406</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">180</td>
+<td style="text-align: right;">10/1/2039</td>
+<td style="text-align: right;">0.00000</td>
+<td style="text-align: right;">0.00000</td>
+<td style="text-align: right;">0.36225</td>
+<td style="text-align: right;">0.00204</td>
+</tr>
+</tbody>
+</table>
+<hr>
+</section>
+<section id="problem-7-payment-delay" class="level2">
+<h2 class="anchored" data-anchor-id="problem-7-payment-delay">Problem 7: Payment Delay</h2>
+<p>The date column from Problem 6 contains <strong>Accrual</strong> dates — the dates used to compute interest owed. Our assumption has been that borrowers pay on the first of the month, and that remains true. However, there is a <strong>payment delay</strong> between when the servicer receives the borrower’s payment and when it is forwarded to the MBS investor.</p>
+<p>Add a new column that records the MBS payment date, using a payment delay of 24 days.</p>
+<p><strong>Example Output:</strong></p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 9%">
+<col style="width: 17%">
+<col style="width: 17%">
+<col style="width: 12%">
+<col style="width: 24%">
+<col style="width: 20%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: right;">Month</th>
+<th style="text-align: right;">AccrualDate</th>
+<th style="text-align: right;">PaymentDate</th>
+<th style="text-align: right;">Balance</th>
+<th style="text-align: right;">PrincipalPayment</th>
+<th style="text-align: right;">CouponPayment</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">2024-10-01</td>
+<td style="text-align: right;">2024-10-25</td>
+<td style="text-align: right;">100.000000</td>
+<td style="text-align: right;">0.000000</td>
+<td style="text-align: right;">0.000000</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">2024-11-01</td>
+<td style="text-align: right;">2024-11-25</td>
+<td style="text-align: right;">99.684505</td>
+<td style="text-align: right;">0.315495</td>
+<td style="text-align: right;">0.562500</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">2024-12-01</td>
+<td style="text-align: right;">2024-12-25</td>
+<td style="text-align: right;">99.350609</td>
+<td style="text-align: right;">0.333897</td>
+<td style="text-align: right;">0.560725</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">…</td>
+<td style="text-align: right;">…</td>
+<td style="text-align: right;">…</td>
+<td style="text-align: right;">…</td>
+<td style="text-align: right;">…</td>
+<td style="text-align: right;">…</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">59</td>
+<td style="text-align: right;">2029-09-01</td>
+<td style="text-align: right;">2029-09-25</td>
+<td style="text-align: right;">58.485668</td>
+<td style="text-align: right;">0.906208</td>
+<td style="text-align: right;">0.334079</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">60</td>
+<td style="text-align: right;">2029-10-01</td>
+<td style="text-align: right;">2029-10-25</td>
+<td style="text-align: right;">57.579820</td>
+<td style="text-align: right;">0.905848</td>
+<td style="text-align: right;">0.328982</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">61</td>
+<td style="text-align: right;">2029-11-01</td>
+<td style="text-align: right;">2029-11-25</td>
+<td style="text-align: right;">56.674681</td>
+<td style="text-align: right;">0.905140</td>
+<td style="text-align: right;">0.323886</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">…</td>
+<td style="text-align: right;">…</td>
+<td style="text-align: right;">…</td>
+<td style="text-align: right;">…</td>
+<td style="text-align: right;">…</td>
+<td style="text-align: right;">…</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">178</td>
+<td style="text-align: right;">2039-08-01</td>
+<td style="text-align: right;">2039-08-25</td>
+<td style="text-align: right;">0.722526</td>
+<td style="text-align: right;">0.358394</td>
+<td style="text-align: right;">0.006080</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">179</td>
+<td style="text-align: right;">2039-09-01</td>
+<td style="text-align: right;">2039-09-25</td>
+<td style="text-align: right;">0.362253</td>
+<td style="text-align: right;">0.360273</td>
+<td style="text-align: right;">0.004064</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">180</td>
+<td style="text-align: right;">2039-10-01</td>
+<td style="text-align: right;">2039-10-25</td>
+<td style="text-align: right;">0.000000</td>
+<td style="text-align: right;">0.362253</td>
+<td style="text-align: right;">0.002038</td>
+</tr>
+</tbody>
+</table>
+<hr>
+</section>
+<section id="problem-8-weighted-average-life" class="level2">
+<h2 class="anchored" data-anchor-id="problem-8-weighted-average-life">Problem 8: Weighted Average Life</h2>
+<p>The common perception of a bond is one of a <strong>bullet</strong>, where the balance remains constant until maturity. A mortgage bond, however, <strong>amortizes</strong> throughout its life — the balance changes before maturity. For an amortizing bond, the <strong>Weighted Average Life</strong> (WAL) gives a sense of the average time it takes for the investor to receive all their principal back.</p>
+<p>Further reading: <a href="https://en.wikipedia.org/wiki/Weighted-average_life">Weighted-average life (Wikipedia)</a></p>
+<p>Write a function that takes a vector of balances, a vector of accrual dates, a vector of payment dates, and a reference date, and computes the WAL.</p>
+<section id="a-note-on-the-reference-date" class="level3">
+<h3 class="anchored" data-anchor-id="a-note-on-the-reference-date">A note on the reference date</h3>
+<p>The reference date is the trade <strong>settle date</strong> — the day the investor pays for and takes ownership of the bond. There is a subtlety about which future cash flows the investor owns. The investor is entitled to all cash flows based on the balance of the bond at time of purchase. For example, if one buys a bond on the 5th of the month and the payment delay is 24 days, the next cash flow falls on the 25th. The investor is <em>not</em> entitled to this cash flow because it is based on the previous month’s balance.</p>
+<p>Assume 365 days in a year when computing the number of years between payment dates and the settle date.</p>
+<p><strong>Example Output:</strong></p>
+<p>WAL of the MBS from Problem 6 with settle date equal to origination: <code>6.580737</code></p>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+<script src="site_libs/quarto-html/zenscroll-min.js"></script>
+</body></html>
