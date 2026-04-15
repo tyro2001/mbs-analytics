@@ -185,7 +185,7 @@ window.Quarto = {
   <li><a href="#problem-7-payment-delay" id="toc-problem-7-payment-delay" class="nav-link" data-scroll-target="#problem-7-payment-delay">Problem 7: Payment Delay</a></li>
   <li><a href="#problem-8-weighted-average-life" id="toc-problem-8-weighted-average-life" class="nav-link" data-scroll-target="#problem-8-weighted-average-life">Problem 8: Weighted Average Life</a>
   <ul class="collapse">
-  <li><a href="#a-note-on-the-reference-date" id="toc-a-note-on-the-reference-date" class="nav-link" data-scroll-target="#a-note-on-the-reference-date">A note on the reference date</a></li>
+  <li><a href="#a-few-words-about-the-reference-date" id="toc-a-few-words-about-the-reference-date" class="nav-link" data-scroll-target="#a-few-words-about-the-reference-date">A few words about the reference date:</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -219,34 +219,30 @@ window.Quarto = {
 <ul>
 <li>The borrower gets a job in a new city</li>
 <li>The borrower finds a lower rate in the current market</li>
-<li>The borrower outgrows (or downsizes from) their current home</li>
-<li>The borrower takes out a new loan with a higher balance and pockets the difference (<strong>Cash Out</strong>)</li>
+<li>The borrower outgrows (or downsizes from) their current home due to changes in the size of their family</li>
+<li>If the loan balance is significantly lower than the value of the home, the borrower can take out a new loan with a higher balance, pay off the old loan, and keep the difference. This is known as a <strong>Cash Out</strong>.</li>
 </ul>
-<p>We referred to projected balances as “scheduled” in previous exercises because they don’t include prepayments. The <strong>Single Monthly Mortality</strong> (SMM) rate is the percentage of the pool that prepays in a particular month. We use it to compute the fraction of the original pool that remains:</p>
-<p><span class="math display">\[pool(0) = 1\]</span></p>
-<p><span class="math display">\[pool(t) = pool(t-1) \cdot [1 - SMM(t-1)]\]</span></p>
-<p>We use this to project the <em>actual balance</em> (<span class="math inline">\(B\)</span>):</p>
-<p><span class="math display">\[B(t) = \text{ScheduledBalance}(t) \cdot pool(t)\]</span></p>
-<p>Create a function that takes the term in months, gross coupon, net coupon, initial balance, and a vector of SMMs, and returns a time series including month, balance, net interest paid, and principal paid for a pass-through bond with prepayment.</p>
-<div class="nb">
-<p><strong>NB:</strong> One cannot technically prepay in the period from <span class="math inline">\(M-1\)</span> to <span class="math inline">\(M\)</span> because all pools pay off at maturity under our assumptions.</p>
-</div>
+<p>We referred to the projected balances as “scheduled” in previous exercises because they don’t include prepayments. Now we are going to add prepayments to our code. The <strong>Single Monthly Mortality</strong> (SMM) rate is the percentage of the pool that prepays in a particular month. We use it to compute the fraction of the original pool that remains:</p>
+<p><span class="math inline">\(pool(0) = 1\)</span></p>
+<p><span class="math inline">\(pool(t) = pool(t-1) * [1 - SMM(t-1)]\)</span></p>
+<p>We use this to project the <span class="math inline">\(\textit{actual balance}\)</span> (<span class="math inline">\(B\)</span>)</p>
+<p><span class="math inline">\(B(t) = ScheduledBalance(t) * pool(t)\)</span></p>
+<p>Create a function that takes the term in months, gross coupon, net coupon, initial balance, and a vector of SMMs to and returns a time series that includes the month, balance, net interest paid, and principal paid for a pass-through bond with prepayment. Your output can contain other helpful fields, such as the SMM, too.</p>
+<p><strong>NB</strong>: One can’t technically prepay in the period from <span class="math inline">\(M-1\)</span> to <span class="math inline">\(M\)</span> because all pools pay off at maturity under our assumptions.</p>
 <p>Try it out with:</p>
 <ul>
 <li>Term of 180 months</li>
 <li>Gross coupon of 7%</li>
 <li>Net coupon of 6.75%</li>
 <li>Initial balance of 100</li>
-<li><span class="math inline">\(\text{SMM}(t)\)</span>:
+<li>SMM(t):
 <ul>
 <li><span class="math inline">\(\frac{t}{60} \times 0.01\)</span> for <span class="math inline">\(t &lt; 60\)</span></li>
 <li><span class="math inline">\(0.015 - \frac{t}{120} \times 0.01\)</span> for <span class="math inline">\(t \ge 60\)</span></li>
 </ul></li>
 </ul>
-<div class="nb">
-<p><strong>NB:</strong> The SMM function above produces a decimal value, not a percent.</p>
-</div>
-<p><strong>Example Output:</strong></p>
+<p><strong>NB</strong>: The SMM function above produces a decimal value instead of a percent.</p>
+<p><strong>Example Output:</strong> From example SMMs and contract described above:</p>
 <table class="caption-top table">
 <thead>
 <tr class="header">
@@ -329,8 +325,8 @@ window.Quarto = {
 </section>
 <section id="problem-6-dates" class="level2">
 <h2 class="anchored" data-anchor-id="problem-6-dates">Problem 6: Dates</h2>
-<p>We have been working in terms of months. Now we need to introduce dates. In quantitative finance we call the start date of the mortgage its <strong>Origination</strong> date and the end date its <strong>Maturity</strong>. Since our loans always pay on the first of every month, the origination date and the term uniquely determine the maturity.</p>
-<p>Update your existing code to include an origination date and add a column containing the running date associated with each month. Run your code on the MBS from Problem 5 with origination date of 10/1/2024.</p>
+<p>We have been working in terms of months to this point. Now we need to introduce dates. In QF we call the start date of the mortgage its <strong>Origination</strong> date and the end date its <strong>Maturity</strong>. Since our loans always pay on the first of every month, the origination date and the term uniquely determine the maturity.</p>
+<p>Update your existing code to include origination date and add a column that contains the running date associated with each month. Run your code on the MBS from problem 5 with origination date of 10/1/2024.</p>
 <p><strong>Example Output:</strong></p>
 <table class="caption-top table">
 <thead>
@@ -438,8 +434,8 @@ window.Quarto = {
 </section>
 <section id="problem-7-payment-delay" class="level2">
 <h2 class="anchored" data-anchor-id="problem-7-payment-delay">Problem 7: Payment Delay</h2>
-<p>The date column from Problem 6 contains <strong>Accrual</strong> dates — the dates used to compute interest owed. Our assumption has been that borrowers pay on the first of the month, and that remains true. However, there is a <strong>payment delay</strong> between when the servicer receives the borrower’s payment and when it is forwarded to the MBS investor.</p>
-<p>Add a new column that records the MBS payment date, using a payment delay of 24 days.</p>
+<p>The date column you added in the previous problem contains <strong>Accrual</strong> dates. These are the dates used to compute interest owed. Our assumption so far has been that the borrower pays on the first of the month, and that remains true. However, there is a <strong>payment delay</strong> between when the servicer receives the borrower’s payment and when this payment is forwarded to the MBS investor.</p>
+<p>Add a new column that records the MBS payment date, considering a payment delay of 24 days. You can also add this as an optional argument to your code above.</p>
 <p><strong>Example Output:</strong></p>
 <table class="caption-top table">
 <colgroup>
@@ -555,15 +551,15 @@ window.Quarto = {
 </section>
 <section id="problem-8-weighted-average-life" class="level2">
 <h2 class="anchored" data-anchor-id="problem-8-weighted-average-life">Problem 8: Weighted Average Life</h2>
-<p>The common perception of a bond is one of a <strong>bullet</strong>, where the balance remains constant until maturity. A mortgage bond, however, <strong>amortizes</strong> throughout its life — the balance changes before maturity. For an amortizing bond, the <strong>Weighted Average Life</strong> (WAL) gives a sense of the average time it takes for the investor to receive all their principal back.</p>
-<p>Further reading: <a href="https://en.wikipedia.org/wiki/Weighted-average_life">Weighted-average life (Wikipedia)</a></p>
-<p>Write a function that takes a vector of balances, a vector of accrual dates, a vector of payment dates, and a reference date, and computes the WAL.</p>
-<section id="a-note-on-the-reference-date" class="level3">
-<h3 class="anchored" data-anchor-id="a-note-on-the-reference-date">A note on the reference date</h3>
-<p>The reference date is the trade <strong>settle date</strong> — the day the investor pays for and takes ownership of the bond. There is a subtlety about which future cash flows the investor owns. The investor is entitled to all cash flows based on the balance of the bond at time of purchase. For example, if one buys a bond on the 5th of the month and the payment delay is 24 days, the next cash flow falls on the 25th. The investor is <em>not</em> entitled to this cash flow because it is based on the previous month’s balance.</p>
-<p>Assume 365 days in a year when computing the number of years between payment dates and the settle date.</p>
+<p>The common perception of a bond is one of a <strong>bullet</strong>, where the balance remains constant until maturity, at which time the entire principal is paid off. A mortgage bond, however, <strong>amortizes</strong> throughout its life, meaning the balance changes before maturity. In the case of an amortizing bond, it is useful to know its <strong>Weighted Average Life</strong> (WAL) to get a sense of the average time it takes for the lender or investor to receive all their principal back. You can read the basics here:</p>
+<p><a href="https://en.wikipedia.org/wiki/Weighted-average_life">Weighted-average life (Wikipedia)</a></p>
+<p>Write a function that takes a vector of balances, a vector of accrual dates, a vector of payment dates, and a reference date, and computes the WAL. The function could also just take a reference date and a dataframe that contains balance, accrual date, and payment date.</p>
+<section id="a-few-words-about-the-reference-date" class="level3">
+<h3 class="anchored" data-anchor-id="a-few-words-about-the-reference-date">A few words about the reference date:</h3>
+<p>The reference date is actually the trade <strong>settle date</strong>, which is the day the investor pays for and takes ownership of the bond. There is a wrinkle about which future cash flows the investor owns. The investor is entitled to all cash flows based on the balance of the bond at the time of purchase. One source of confusion is if the purchase happens before the payment date. For instance, let’s assume one buys a bond on the 5th of the month that has a payment delay of 24 days, implying the next cash flow will fall on the 25th of the month. The investor is not entitled to this cash flow because it is based on the previous month’s balance.</p>
+<p>Assume the number of days in a year is a constant 365 when computing the number of years between payment dates and the settle date.</p>
 <p><strong>Example Output:</strong></p>
-<p>WAL of the MBS from Problem 6 with settle date equal to origination: <code>6.580737</code></p>
+<p>Here is the WAL of the MBS from problem 6 assuming the settle date is the same as origanation: <code>6.580737</code></p>
 
 
 </section>
@@ -643,7 +639,7 @@ window.Quarto = {
     }
       var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
       var mailtoRegex = new RegExp(/^mailto:/);
-        var filterRegex = new RegExp('/' + window.location.host + '/');
+        var filterRegex = new RegExp("https:\/\/tyro2001\.github\.io\/mbs-analytics\/");
       var isInternal = (href) => {
           return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
       }

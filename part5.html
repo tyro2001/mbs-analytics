@@ -253,69 +253,81 @@ window.Quarto = {
 
 <section id="problem-17-an-improved-prepayment-model" class="level2">
 <h2 class="anchored" data-anchor-id="problem-17-an-improved-prepayment-model">Problem 17: An Improved Prepayment Model</h2>
-<p>Having constructed forward curves, we return to prepayment. At a high level, borrower prepayments are influenced by two primary drivers:</p>
+<p>Having constructed two forward curves for short rates, we now return to the topic of prepayment. At a high level, borrower prepayments are influenced by two primary drivers:</p>
 <ol type="1">
-<li><strong>Refinance Incentive (Refi):</strong> Borrowers refinance when market rates drop, allowing a new loan at a lower rate. This is highly sensitive to rate changes.</li>
-<li><strong>Demographics (Demo):</strong> Life events — job relocation, retirement, family changes, downsizing — also drive prepayments. These are less rate-sensitive and more tied to the borrower’s circumstances and the loan’s age.</li>
+<li><p><strong>Refinance Incentive (Refi):</strong> Borrowers refinance when market interest rates drop, allowing them to secure a new loan with a lower rate. This type of prepayment is highly sensitive to changes in market rates. When the spread between the borrower’s original loan rate and current market rates increases, refinancing becomes more attractive, leading to a rise in prepayments.</p></li>
+<li><p><strong>Demographics (Demo):</strong> Life events, such as job relocation, retirement, family changes, or downsizing, also drive prepayments. These demographic-driven prepayments are less influenced by interest rates and are tied more closely to the borrower’s circumstances and the age of the loan.</p></li>
 </ol>
 <section id="primary-current-coupon-model" class="level3">
 <h3 class="anchored" data-anchor-id="primary-current-coupon-model">Primary Current Coupon Model</h3>
-<p>The mortgage rate from the market is known as the <strong>Primary Current Coupon</strong> (PCC). To project it into the future, we use a simple model:</p>
+<p>The mortgage rate from the market is known as the <strong>Primary Current Coupoon</strong> (PCC). In order to project it into the future, we are going to use a very simple model:</p>
 <p><span class="math display">\[
 PCC(t) = \text{DiscountRate}(t) + \text{PccSpread}
 \]</span></p>
-<p>where <span class="math inline">\(\text{DiscountRate}(t)\)</span> is the short rate and PccSpread is a fixed spread accounting for additional costs. Use <strong>3.3%</strong> as your spread.</p>
+<p>Where <span class="math inline">\(\text{DiscountRate}(t)\)</span> represents the short rate, and PccSpread is a fixed spread that accounts for additional costs or market factors. While this PCC model isn’t very realistic, it allows us to better represent prepayment behavior in our analysis. Use 3.3% as your spread.</p>
 </section>
 <section id="refi-model" class="level3">
 <h3 class="anchored" data-anchor-id="refi-model">Refi Model</h3>
-<p>The refinance component is:</p>
+<p>The refinance component of our prepay model is defined as:</p>
 <p><span class="math display">\[
-\text{refi}(\text{spread}(t)) =
+refi(spread(t)) =
 \begin{cases}
-0 &amp; \text{if } \text{spread} &lt; 0 \\
-\text{slope} \cdot \text{spread} &amp; \text{if } 0 \leq \text{spread} \leq 0.015 \\
-0.0425 &amp; \text{if } \text{spread} &gt; 0.015
+\begin{aligned}
+&amp;0 &amp; \text{if } spread &lt; 0, \\
+&amp;\ slope \cdot spread &amp; \text{if } 0 \leq spread \leq .015, \\
+&amp;.0425 &amp; \text{if } spread &gt; .015
+\end{aligned}
 \end{cases}
 \]</span></p>
-<p>where:</p>
+<p><br> Where:</p>
 <ul>
-<li><span class="math inline">\(\text{slope} = \dfrac{0.0425}{0.015}\)</span></li>
-<li><span class="math inline">\(\text{spread}(t) = \text{GrossCoupon} - PCC(t)\)</span></li>
+<li><span class="math inline">\(slope = \frac{.0425}{.015}\)</span></li>
+<li><span class="math inline">\(spread(t) = GrossCoupon - PCC(t)\)</span></li>
 </ul>
+<p><br> <br></p>
+<p>Refi maps the refinancing spread to prepayment behavior, with stronger incentives leading to higher prepayment rates.</p>
 </section>
 <section id="demographic-model" class="level3">
 <h3 class="anchored" data-anchor-id="demographic-model">Demographic Model</h3>
-<p>Demographic prepayments depend on loan age and seasonal trends:</p>
-<p><span class="math display">\[\text{demo}(t) = \text{seasoning}(\text{age}(t)) \cdot \text{seasonal}(\text{month\_of\_year}(t))\]</span></p>
+<p>Our modeled demographic prepayments depend on two factors: the age of the mortgage and seasonal trends:</p>
+<p><span class="math display">\[
+demo(t) = seasoning(age(t)) \cdot seasonal(month\_of\_year(t))
+\]</span></p>
 <ul>
-<li><strong>Seasoning:</strong> Prepayments ramp linearly from 0 to a base SMM over the first 18 months. Use <strong>0.5%</strong> as your base SMM.</li>
-<li><strong>Seasonality:</strong> Rates exhibit seasonal trends with summer peaks and winter dips. Use the monthly scalars below.</li>
+<li><strong>Seasoning:</strong> Prepayments are low when a loan is new, gradually increasing to a stable long-term rate. The seasoning factor ramps linearly from 0 to a base SMM over the first 18 months of the loan’s life. For these exercises use .5% for your base SMM.</li>
+<li><strong>Seasonality:</strong> Prepayment rates exhibit predictable seasonal trends, with spikes in the summer and dips in the winter. The seasonal factor scales prepayment rates accordingly based on the month. See the code block below for the month to scalars map.</li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>SEASONAL_FACTORS_ARRAY <span class="op">=</span> np.array([</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    <span class="fl">0.75</span>,  <span class="co"># January</span></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    <span class="fl">0.84</span>,  <span class="co"># February</span></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    <span class="fl">0.93</span>,  <span class="co"># March</span></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    <span class="fl">1.02</span>,  <span class="co"># April</span></span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    <span class="fl">1.11</span>,  <span class="co"># May</span></span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    <span class="fl">1.20</span>,  <span class="co"># June</span></span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    <span class="fl">1.20</span>,  <span class="co"># July</span></span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    <span class="fl">1.11</span>,  <span class="co"># August</span></span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>    <span class="fl">1.02</span>,  <span class="co"># September</span></span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>    <span class="fl">0.93</span>,  <span class="co"># October</span></span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>    <span class="fl">0.84</span>,  <span class="co"># November</span></span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>    <span class="fl">0.75</span>   <span class="co"># December</span></span>
-<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
 <section id="combined-prepayment-model" class="level3">
 <h3 class="anchored" data-anchor-id="combined-prepayment-model">Combined Prepayment Model</h3>
-<p><span class="math display">\[SMM(t) = \text{refi}(\text{spread}(t)) + \text{demo}(t)\]</span></p>
-<p>where <span class="math inline">\(t\)</span> is time in months from the first of the market close’s month (e.g., if market close is 1/15/2024, then <span class="math inline">\(t\)</span> is measured from 1/1/2024).</p>
-<p>Implement the above. Run our 15-year MBS using the rates from Problem 10 with OAS of 3%. Then run the same MBS with discount rates shocked +0.5% and −0.5%. Plot the balances through time for each scenario.</p>
-<div class="nb">
-<p><strong>NB:</strong> Changing OAS should not change cash flows. Shocking discount rates will change cash flows because PCC is a function of those rates. Make sure you verify this distinction.</p>
-</div>
+<p>Our new prepayment model combines these components to better capture borrower behavior and prepayment optionality:</p>
+<p><span class="math display">\[
+SMM(t) = refi(spread(t)) + demo(t)
+\]</span></p>
+<p>Here:</p>
+<ul>
+<li><span class="math inline">\(spread(t)\)</span>: GrossCoupon - PCC(t)</li>
+<li><span class="math inline">\(t\)</span>: Time in months from the first of the market close’s month. E.g. If the market close is 1/15/2024 then <span class="math inline">\(t\)</span> is the time to 1/1/2024</li>
+</ul>
+<p>These models provide a more nuanced representation of prepayment dynamics, improving the realism of our simulations.</p>
+<p>Implement the logic described above. Run our 15 year MBS using the rates from Problem 10 (as opposed to the rates from your calibrators). Assume OAS is 3%. Now run the same MBS with the discount rates shocked .5% and down .5% Plot the balances through time for each.</p>
+<p><strong>NB:</strong> There are a lot of moving parts here. Remember that changing your OAS should not change your cash flows. I would make sure this is the case. Shocking your discount rates will definitely change your cash flows because your PCC is a funciton of those rates.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>SEASONAL_FACTORS_ARRAY <span class="op">=</span> np.array([</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>        <span class="fl">0.75</span>,  <span class="co"># January (month 1)</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>        <span class="fl">0.84</span>,  <span class="co"># February (month 2)</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>        <span class="fl">0.93</span>,  <span class="co"># March (month 3)</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>        <span class="fl">1.02</span>,  <span class="co"># April (month 4)</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>        <span class="fl">1.11</span>,  <span class="co"># May (month 5)</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>        <span class="fl">1.20</span>,  <span class="co"># June (month 6)</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>        <span class="fl">1.20</span>,  <span class="co"># July (month 7)</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>        <span class="fl">1.11</span>,  <span class="co"># August (month 8)</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>        <span class="fl">1.02</span>,  <span class="co"># September (month 9)</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>        <span class="fl">0.93</span>,  <span class="co"># October (month 10)</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>        <span class="fl">0.84</span>,  <span class="co"># November (month 11)</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>        <span class="fl">0.75</span>   <span class="co"># December (month 12)</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>    ])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p><strong>Example Output:</strong></p>
-<p><code>RateShock: 0.005</code></p>
+<p><code>RateShock:  0.005</code></p>
 <table class="caption-top table">
 <thead>
 <tr class="header">
@@ -357,7 +369,7 @@ PCC(t) = \text{DiscountRate}(t) + \text{PccSpread}
 </tr>
 </tbody>
 </table>
-<p><code>RateShock: 0.0</code></p>
+<p><code>RateShock:  0.0</code></p>
 <table class="caption-top table">
 <thead>
 <tr class="header">
@@ -399,7 +411,7 @@ PCC(t) = \text{DiscountRate}(t) + \text{PccSpread}
 </tr>
 </tbody>
 </table>
-<p><code>RateShock: -0.005</code></p>
+<p><code>RateShock:  -0.005</code></p>
 <table class="caption-top table">
 <thead>
 <tr class="header">
@@ -446,7 +458,7 @@ PCC(t) = \text{DiscountRate}(t) + \text{PccSpread}
 </section>
 <section id="problem-18-negative-convexity" class="level2">
 <h2 class="anchored" data-anchor-id="problem-18-negative-convexity">Problem 18: Negative Convexity</h2>
-<p>You may have noticed that the owner of this MBS loses more money when the market moves against them than they gain when it moves in their favor. For example:</p>
+<p>You may have noticed that the owner of this MBS loses more money when the market goes against them than they make when the market goes their way. Let’s look at the first rows of the above output.</p>
 <table class="caption-top table">
 <thead>
 <tr class="header">
@@ -460,41 +472,50 @@ PCC(t) = \text{DiscountRate}(t) + \text{PccSpread}
 <tbody>
 <tr class="odd">
 <td style="text-align: right;">2024-10-01</td>
-<td style="text-align: right;">+0.5%</td>
+<td style="text-align: right;">.5%</td>
 <td style="text-align: right;">97.475209</td>
-<td style="text-align: right;">−2.500575</td>
+<td style="text-align: right;">-2.500575</td>
 <td style="text-align: right;">6.75</td>
 </tr>
 <tr class="even">
 <td style="text-align: right;">2024-10-01</td>
-<td style="text-align: right;">0.0%</td>
+<td style="text-align: right;">.0%</td>
 <td style="text-align: right;">99.975784</td>
 <td style="text-align: right;">0.000000</td>
 <td style="text-align: right;">5.06</td>
 </tr>
 <tr class="odd">
 <td style="text-align: right;">2024-10-01</td>
-<td style="text-align: right;">−0.5%</td>
+<td style="text-align: right;">-.5%</td>
 <td style="text-align: right;">101.347358</td>
-<td style="text-align: right;">+1.371574</td>
+<td style="text-align: right;">1.371574</td>
 <td style="text-align: right;">3.23</td>
 </tr>
 </tbody>
 </table>
-<p>In the fixed-income world, this is known as <strong>Negative Convexity</strong>. It arises because the MBS owner is effectively long a fixed-income amortizing bond while being short an <a href="https://en.wikipedia.org/wiki/Option_style#American_and_European_options">American option</a> that allows for prepayment.</p>
-<p>Run your MBS on an array of discount rate shocks from −1.5% to +1.5% in 10 basis point increments with OAS of 3%. Plot the values using the 10/1/2024 settle date, with shocks on the X-axis and values on the Y-axis.</p>
+<p>In the fixed-income world, this phenomenon is referred to as <strong>Negative Convexity</strong>. It arises because the owner of an MBS or mortgage is effectively long a fixed-income amortizing bond while being short an <a href="https://en.wikipedia.org/wiki/Option_style#American_and_European_options">American option</a> that allows for prepayment.</p>
+<p>Run your MBS on an array of discount rate shocks that start at -1.5% and ends at 1.5% in increments of 10 basis points with an OAS of 3%. Plot the values using the 10/1/2024 settle. Use the shocks for the X-axis and the values for the Y.</p>
 <hr>
 </section>
 <section id="problem-19-derivatives" class="level2">
 <h2 class="anchored" data-anchor-id="problem-19-derivatives">Problem 19: Derivatives</h2>
-<p>The <a href="https://en.wikipedia.org/wiki/Taylor_series">Taylor series</a> gives us a second-order approximation to the change in MBS value given a change in rates.</p>
-<p>The first derivative with respect to rates is the <strong>Dollar Value of an 01</strong> (DV01). These exercises use 1% as the shift amount.</p>
-<p><span class="math display">\[DV01 = \frac{V(\text{up}) - V(\text{dn})}{2 \cdot \text{shock}}\]</span></p>
-<p>The second derivative is <strong>convexity</strong> (or gamma):</p>
-<p><span class="math display">\[\text{Convexity} = \frac{V(\text{up}) + V(\text{dn}) - 2 \cdot V(\text{mid})}{\text{shock}^2}\]</span></p>
-<p>where <span class="math inline">\(V(\text{mid})\)</span> is the base value (shock = 0).</p>
-<p><strong>Example Output:</strong></p>
-<p>Define the target as the value of our 15-year MBS under a 15 basis point shock. Run a grid of shocks to compare the second-order Taylor expansion against the true value.</p>
+<p>The <a href="https://en.wikipedia.org/wiki/Taylor_series">Taylor’s Series</a> gives us a quick way to compute a second order approximation to the change in MBS value given a change in rates.</p>
+<p>The first derivative with respect to rates is known as the <strong>Dollar Value of an 01</strong> (DV01). The ‘01’ can be one percent or one basis point. These exercises will use one percent. This is closely related to <a href="https://en.wikipedia.org/wiki/Duration_(finance)">Duration</a>, but I want to stick with the raw derivative for simplicity.</p>
+<p><span class="math display">\[DV01 = \frac{V(up) - V(dn)}{2 \cdot shock}\]</span></p>
+<p>where:</p>
+<ul>
+<li>shock is the amount to bump the discount rates</li>
+<li>V(up) is the value given a positive bump amount</li>
+<li>V(dn) is the value given a negative bump amount</li>
+</ul>
+<p>The second derivative is known as convexity or gamma and is defined by:</p>
+<p><span class="math display">\[Convexity = \frac{V(up) + V(dn) - 2 \cdot V(md)}{shock^2}\]</span></p>
+<p>Where:</p>
+<ul>
+<li>V(md) is the base value, i.e.&nbsp;where shock is zero.</li>
+</ul>
+<p><strong>Example output:</strong></p>
+<p>Define your target to be the value of our 15 year MBS under a 15 basis point shock. Then run a grid of shocks in order to see how each does as the basis of a second order Taylor expansion.</p>
 <table class="caption-top table">
 <colgroup>
 <col style="width: 18%">
@@ -519,26 +540,26 @@ PCC(t) = \text{DiscountRate}(t) + \text{PccSpread}
 <tbody>
 <tr class="odd">
 <td style="text-align: right;">0.0100</td>
-<td style="text-align: right;">−4.019408</td>
-<td style="text-align: right;">−6.665465</td>
+<td style="text-align: right;">-4.019408</td>
+<td style="text-align: right;">-6.665465</td>
 <td style="text-align: right;">99.975784</td>
 <td style="text-align: right;">99.315381</td>
 <td style="text-align: right;">99.297886</td>
-<td style="text-align: right;">−0.017495</td>
+<td style="text-align: right;">-0.017495</td>
 </tr>
 <tr class="even">
 <td style="text-align: right;">0.1000</td>
-<td style="text-align: right;">−4.018581</td>
-<td style="text-align: right;">−5.173302</td>
+<td style="text-align: right;">-4.018581</td>
+<td style="text-align: right;">-5.173302</td>
 <td style="text-align: right;">99.975784</td>
 <td style="text-align: right;">99.315381</td>
 <td style="text-align: right;">99.314797</td>
-<td style="text-align: right;">−0.000584</td>
+<td style="text-align: right;">-0.000584</td>
 </tr>
 <tr class="odd">
 <td style="text-align: right;">0.2000</td>
-<td style="text-align: right;">−4.015611</td>
-<td style="text-align: right;">−5.081801</td>
+<td style="text-align: right;">-4.015611</td>
+<td style="text-align: right;">-5.081801</td>
 <td style="text-align: right;">99.975784</td>
 <td style="text-align: right;">99.315381</td>
 <td style="text-align: right;">99.316272</td>
@@ -546,8 +567,8 @@ PCC(t) = \text{DiscountRate}(t) + \text{PccSpread}
 </tr>
 <tr class="even">
 <td style="text-align: right;">0.3000</td>
-<td style="text-align: right;">−4.000887</td>
-<td style="text-align: right;">−4.954105</td>
+<td style="text-align: right;">-4.000887</td>
+<td style="text-align: right;">-4.954105</td>
 <td style="text-align: right;">99.975784</td>
 <td style="text-align: right;">99.315381</td>
 <td style="text-align: right;">99.319917</td>
@@ -555,8 +576,8 @@ PCC(t) = \text{DiscountRate}(t) + \text{PccSpread}
 </tr>
 <tr class="odd">
 <td style="text-align: right;">0.4000</td>
-<td style="text-align: right;">−3.950297</td>
-<td style="text-align: right;">−4.755959</td>
+<td style="text-align: right;">-3.950297</td>
+<td style="text-align: right;">-4.755959</td>
 <td style="text-align: right;">99.975784</td>
 <td style="text-align: right;">99.315381</td>
 <td style="text-align: right;">99.329735</td>
@@ -564,8 +585,8 @@ PCC(t) = \text{DiscountRate}(t) + \text{PccSpread}
 </tr>
 <tr class="even">
 <td style="text-align: right;">0.5000</td>
-<td style="text-align: right;">−3.872149</td>
-<td style="text-align: right;">−4.516003</td>
+<td style="text-align: right;">-3.872149</td>
+<td style="text-align: right;">-4.516003</td>
 <td style="text-align: right;">99.975784</td>
 <td style="text-align: right;">99.315381</td>
 <td style="text-align: right;">99.344156</td>
@@ -577,10 +598,10 @@ PCC(t) = \text{DiscountRate}(t) + \text{PccSpread}
 </section>
 <section id="problem-20-multi-path-valuation" class="level2">
 <h2 class="anchored" data-anchor-id="problem-20-multi-path-valuation">Problem 20: Multi-Path Valuation</h2>
-<p>Running our MBS along the rates from the step function above, your bootstrapped curve, and your smoother curve will each produce a different value. Worse, none individually captures the value of the optionality embedded in the security. We want to run a large number of possible trajectories through time and compute value as the average of the per-trajectory values.</p>
-<p>Write a function that takes a vector of dates, a matrix of discount rate trajectories, and computes the value of our standard MBS with OAS of 3%. For this problem, your paths are: the original rates, a +50bp shock, and a −50bp shock. Although there are only three paths here, write your code to handle an arbitrary number.</p>
+<p>If you run our favorite MBS along the rates given above, the rates from your bootstrapped curve, and the rates from your smoother curve you will see each produces a different value. What’s worse is that individually they do a poor job of capturing the value of the optionality embedded in the security. We would like to run a large number of possible trajectories through time and compute the value as the average of the trajectory values.</p>
+<p>Write a function that takes a vector of dates, a matrix of discount rate trajectories, and values our standard MBS with an OAS of 3%. This is mostly an exercise in plumbing, so your paths are the rates given above, a 50 basis point shock up, and a 50 basis point shock down. Even though there are only three trajectories in this problem, write your code to be general enough to take an arbitrary number of paths.</p>
 <p><strong>Example Output:</strong></p>
-<p><code>99.59945</code></p>
+<p>99.59945</p>
 
 
 </section>
@@ -659,7 +680,7 @@ PCC(t) = \text{DiscountRate}(t) + \text{PccSpread}
     }
       var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
       var mailtoRegex = new RegExp(/^mailto:/);
-        var filterRegex = new RegExp('/' + window.location.host + '/');
+        var filterRegex = new RegExp("https:\/\/tyro2001\.github\.io\/mbs-analytics\/");
       var isInternal = (href) => {
           return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
       }

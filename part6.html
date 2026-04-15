@@ -182,14 +182,10 @@ window.Quarto = {
   <ul>
   <li><a href="#problem-21-monte-carlo-paths-via-hull-white" id="toc-problem-21-monte-carlo-paths-via-hull-white" class="nav-link active" data-scroll-target="#problem-21-monte-carlo-paths-via-hull-white">Problem 21: Monte Carlo Paths via Hull-White</a>
   <ul class="collapse">
-  <li><a href="#the-one-factor-hull-white-model" id="toc-the-one-factor-hull-white-model" class="nav-link" data-scroll-target="#the-one-factor-hull-white-model">The One-Factor Hull-White Model</a></li>
-  <li><a href="#discretization" id="toc-discretization" class="nav-link" data-scroll-target="#discretization">Discretization</a></li>
-  <li><a href="#stochastic-discount-factors" id="toc-stochastic-discount-factors" class="nav-link" data-scroll-target="#stochastic-discount-factors">Stochastic Discount Factors</a></li>
-  <li><a href="#steps-for-simulation" id="toc-steps-for-simulation" class="nav-link" data-scroll-target="#steps-for-simulation">Steps for Simulation</a></li>
-  <li><a href="#verification-checks" id="toc-verification-checks" class="nav-link" data-scroll-target="#verification-checks">Verification Checks</a></li>
+  <li><a href="#steps-for-monte-carlo-simulation" id="toc-steps-for-monte-carlo-simulation" class="nav-link" data-scroll-target="#steps-for-monte-carlo-simulation">Steps for Monte Carlo Simulation</a></li>
   </ul></li>
   <li><a href="#problem-22-monte-carlo-valuation" id="toc-problem-22-monte-carlo-valuation" class="nav-link" data-scroll-target="#problem-22-monte-carlo-valuation">Problem 22: Monte Carlo Valuation</a></li>
-  <li><a href="#problem-23-antithetic-variates" id="toc-problem-23-antithetic-variates" class="nav-link" data-scroll-target="#problem-23-antithetic-variates">Problem 23: Antithetic Variates</a></li>
+  <li><a href="#problem-23-antithetics" id="toc-problem-23-antithetics" class="nav-link" data-scroll-target="#problem-23-antithetics">Problem 23: Antithetics</a></li>
   <li><a href="#problem-24-trinomial-lattices" id="toc-problem-24-trinomial-lattices" class="nav-link" data-scroll-target="#problem-24-trinomial-lattices">Problem 24: Trinomial Lattices</a></li>
   </ul>
 </nav>
@@ -200,7 +196,7 @@ window.Quarto = {
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
 <h1 class="title">Part VI: Monte Carlo</h1>
-<p class="subtitle lead">Problems 21–23 (Problem 24 under construction)</p>
+<p class="subtitle lead">Problems 21–24</p>
 </div>
 
 
@@ -219,56 +215,83 @@ window.Quarto = {
 
 <section id="problem-21-monte-carlo-paths-via-hull-white" class="level2">
 <h2 class="anchored" data-anchor-id="problem-21-monte-carlo-paths-via-hull-white">Problem 21: Monte Carlo Paths via Hull-White</h2>
-<p>To generate Monte Carlo paths of rates we use the classic <a href="https://en.wikipedia.org/wiki/Hull%E2%80%93White_model">Hull-White model</a> for short rates.</p>
+<p>In order to generate Monte Carlo paths of rates, we will use the classic <a href="https://en.wikipedia.org/wiki/Hull%E2%80%93White_model">Hull-White model</a> for short rates. I don’t care if you find the code online or write it up yourself. If you choose to roll your own, here are some helpful notes.</p>
 <hr>
-<section id="the-one-factor-hull-white-model" class="level3">
-<h3 class="anchored" data-anchor-id="the-one-factor-hull-white-model">The One-Factor Hull-White Model</h3>
-<p>The <strong>one-factor Hull-White model</strong> describes the evolution of short-term interest rates <span class="math inline">\(r(t)\)</span> via the stochastic differential equation (SDE):</p>
-<p><span class="math display">\[dr(t) = [\theta(t) - \alpha r(t)]\, dt + \sigma\, dW(t)\]</span></p>
-<p><strong>Key components:</strong></p>
+<p>The <strong>one-factor Hull-White model</strong> describes the evolution of short-term interest rates <span class="math inline">\(r(t)\)</span> using the stochastic differential equation (SDE):</p>
+<p><span class="math display">\[dr(t) = [\theta(t) - \alpha r(t)] dt + \sigma \, dW(t)\]</span></p>
+<section id="key-components" class="level4">
+<h4 class="anchored" data-anchor-id="key-components">Key Components:</h4>
 <ol type="1">
-<li><strong>Mean Reversion:</strong> The term <span class="math inline">\(-\alpha r(t)\)</span> pulls <span class="math inline">\(r(t)\)</span> toward a time-dependent mean. <span class="math inline">\(\alpha &gt; 0\)</span> is the mean reversion speed.</li>
-<li><strong>Volatility:</strong> <span class="math inline">\(\sigma\)</span> is the volatility of the short rate, scaled by <a href="https://en.wikipedia.org/wiki/Brownian_motion">Brownian motion</a> <span class="math inline">\(W(t)\)</span>.</li>
-<li><strong>Time-Dependent Drift</strong> <span class="math inline">\(\theta(t)\)</span>: Ensures the model fits the initial term structure of interest rates.</li>
+<li><strong>Mean Reversion</strong>:
+<ul>
+<li>The term $ -r(t)$ pulls the rate $ r(t) $ toward a time-dependent mean.</li>
+<li>$ &gt; 0 $ is the mean reversion speed.</li>
+</ul></li>
+<li><strong>Volatility</strong>:
+<ul>
+<li><span class="math inline">\(\sigma\)</span> represents the volatility of the short rate, scaled by the <a href="https://en.wikipedia.org/wiki/Brownian_motion">Brownian motion</a> $ W(t) $.</li>
+</ul></li>
+<li><strong>Time-Dependent Drift</strong> <span class="math inline">\(\theta(t)\)</span>:
+<ul>
+<li>Ensures the model fits the initial term structure of interest rates (e.g., yield curves).</li>
+</ul></li>
 </ol>
-</section>
-<section id="discretization" class="level3">
-<h3 class="anchored" data-anchor-id="discretization">Discretization</h3>
-<p>Using the Euler-Maruyama scheme:</p>
-<p><span class="math display">\[r_{t+\Delta t} = r_t + (\theta(t) - \alpha r_t)\,\Delta t + \sigma \sqrt{\Delta t}\, Z_t\]</span></p>
+<p>To simulate this model using Monte Carlo, the SDE is discretized using the Euler-Maruyama scheme:</p>
+<p><span class="math display">\[
+r_{t+\Delta t} = r_t + \left(\theta(t) - \alpha r_t\right)\Delta t + \sigma \sqrt{\Delta t} \, Z_t
+\]</span></p>
 <p>where:</p>
 <ul>
-<li><span class="math inline">\(r_t\)</span>: Short rate from your forward curve at time <span class="math inline">\(t\)</span></li>
-<li><span class="math inline">\(\Delta t\)</span>: Time step size</li>
-<li><span class="math inline">\(Z_t \sim \mathcal{N}(0, 1)\)</span>: Standard normal draw</li>
+<li><span class="math inline">\(r_t\)</span>: Short rate from your forward curve at time <span class="math inline">\(t\)</span>.</li>
+<li><span class="math inline">\(\Delta t\)</span>: Time step size.</li>
+<li><span class="math inline">\(Z_t\)</span>: Random variable sampled from a standard normal distribution (<span class="math inline">\(Z_t \sim \mathcal{N}(0, 1)\)</span>).</li>
 </ul>
-<p>To compute <span class="math inline">\(\theta(t_i)\)</span>:</p>
-<p><span class="math display">\[\theta(t_i) = \frac{f_{t_{i+1}} - f_{t_i}}{\Delta t} + \alpha f_{t_i} + \frac{\sigma^2}{2\alpha}\left(1 - e^{-2\alpha t_i}\right)\]</span></p>
-<p>where <span class="math inline">\(f_t\)</span> is the continuously compounded forward rate from your forward curve. Choose your grid so that <span class="math inline">\(t\)</span> always hits a knot point on your step discount rate function — no interpolation required.</p>
+<p>To compute <span class="math inline">\(\theta(t_i)\)</span> for Monte Carlo simulation:</p>
+<p><span class="math display">\[
+\theta(t_i) = \frac{f_{t_{i+1}} - f_{t_i}}{\Delta t} + \alpha f_{t_i} + \frac{\sigma^2}{2\alpha} \left(1 - e^{-2\alpha t_i}\right)
+\]</span></p>
+<p>Where <span class="math inline">\(f_t\)</span> is the continuously compounounded forward rate from your forward curve. I usually choose my grid so that the <span class="math inline">\(t\)</span> always hits a knot point on my step discount rate function so no interpolation is required.</p>
+<hr>
 </section>
-<section id="stochastic-discount-factors" class="level3">
-<h3 class="anchored" data-anchor-id="stochastic-discount-factors">Stochastic Discount Factors</h3>
-<p>Each Monte Carlo path produces a rate function that can be used to discount future cash flows. Our discount factors are now <strong>stochastic</strong> (SDF). The SDFs are <em>not</em> zero coupon bonds. However, the average of pathwise SDFs equals the corresponding ZCB:</p>
-<p><span class="math display">\[ZCB(t, T) = \mathbb{E}[\text{SDF}(t, T)] = \mathbb{E}\!\left[e^{-\int_t^T r(u)\,du}\right]\]</span></p>
-</section>
-<section id="steps-for-simulation" class="level3">
-<h3 class="anchored" data-anchor-id="steps-for-simulation">Steps for Simulation</h3>
+<section id="steps-for-monte-carlo-simulation" class="level3">
+<h3 class="anchored" data-anchor-id="steps-for-monte-carlo-simulation">Steps for Monte Carlo Simulation</h3>
 <ol type="1">
-<li><strong>Initialize:</strong> Set the starting short rate <span class="math inline">\(r_0\)</span> from the initial rate of your forward curve.</li>
-<li><strong>Iterate:</strong> For each time step, compute <span class="math inline">\(r_{t+\Delta t}\)</span> using the discretized equation.</li>
-<li><strong>Simulate paths:</strong> Repeat across multiple paths by drawing independent <span class="math inline">\(Z_t\)</span> for each.</li>
-<li><strong>Aggregate:</strong> Use the simulated paths to compute expectations, price derivatives, or analyze rate distributions.</li>
+<li><strong>Initialize</strong>:
+<ul>
+<li>Set the starting short rate <span class="math inline">\(r_0\)</span> with the initial rate of your forward curve.</li>
+</ul></li>
+<li><strong>Iterate Over Time Steps</strong>:
+<ul>
+<li>For each time step, compute <span class="math inline">\(r_{t+\Delta t}\)</span> using the discretized equation.</li>
+</ul></li>
+<li><strong>Simulate Paths</strong>:
+<ul>
+<li>Repeat the process across multiple paths by drawing independent random samples <span class="math inline">\(Z_t\)</span> for each path.</li>
+</ul></li>
+<li><strong>Aggregate Results</strong>:
+<ul>
+<li>Use the simulated short-rate paths to compute expectations, price derivatives, or analyze the distribution of rates.</li>
+</ul></li>
 </ol>
-<div class="nb">
-<p><strong>NB:</strong> Smaller <span class="math inline">\(\Delta t\)</span> improves accuracy but increases computational cost. Variance reduction techniques are explored in Problem 23.</p>
-</div>
-</section>
-<section id="verification-checks" class="level3">
-<h3 class="anchored" data-anchor-id="verification-checks">Verification Checks</h3>
+<p><strong>NB:</strong> Smaller <span class="math inline">\(\Delta t\)</span> improves accuracy but increases computational cost. We will explore <strong>variance reduction techniques</strong> in another problem.</p>
+<hr>
+<p>Let’s return to the topic of discount factors. Each trajectory/path of your monte carlo simulation produces a rate function that you can use to discount future cash flows. Our discount factors are now stochastic (SDF). It is important to keep in mind that the SDFs are <strong>not</strong> zero coupon bonds. However, the average of all those pathwise SDFs are equal to the correspsonding ZCB:</p>
+<p><span class="math display">\[ZCB(t, T) = \mathbb{E}[SDF(t, T)] = \mathbb{E}[e^{-\int_t^T{r(u)du}}]\]</span></p>
+<hr>
 <p><strong>Example Output:</strong></p>
-<p>Results for a 28-day (<span class="math inline">\(28/365\)</span> year) time step grid with <span class="math inline">\(\sigma = 0.01\)</span> and <span class="math inline">\(\alpha = 0.03\)</span>:</p>
-<p>The variance of the simulated short rate <span class="math inline">\(r_t\)</span> should be approximately: <span class="math display">\[\frac{\sigma^2}{2\alpha}\left(1 - e^{-2\alpha t}\right)\]</span></p>
-<p>The variance of SDF(<span class="math inline">\(t\)</span>) should be approximately: <span class="math display">\[\left(\frac{\sigma}{\alpha}\right)^2 \left(t + \frac{2}{\alpha}e^{-\alpha t} - \frac{1}{2\alpha}e^{-2\alpha t} - \frac{3}{2\alpha}\right)\]</span></p>
+<p>In order to check the correctness of your implementation, we need to look at the following things:</p>
+<ul>
+<li><p>The variance of your simulated short rate <span class="math inline">\(r_t\)</span> is approximately: <span class="math display">\[\frac{\sigma^2}{2 \alpha} (1-e^{-2 \alpha t})\]</span></p></li>
+<li><p>The average SDF(<span class="math inline">\(t\)</span>) over your monte carlo paths is approximately the ZCB(<span class="math inline">\(t\)</span>) from your forward curve</p></li>
+<li><p>The variance of SDF(<span class="math inline">\(t\)</span>) is approximately:</p></li>
+</ul>
+<p><span class="math display">\[
+\left(\frac{\sigma}{\alpha}\right)^2 \left( t
++ \frac{2}{\alpha} e^{-\alpha t}
+- \frac{1}{2\alpha} e^{-2\alpha t}
+- \frac{3}{2\alpha} \right)
+\]</span></p>
+<p>Here are the results from a grid of 28 day (28/365 year) time steps with <span class="math inline">\(\sigma = .01\)</span> and <span class="math inline">\(\alpha = .03\)</span></p>
 <table class="caption-top table">
 <colgroup>
 <col style="width: 9%">
@@ -277,8 +300,8 @@ window.Quarto = {
 <col style="width: 9%">
 <col style="width: 15%">
 <col style="width: 11%">
-<col style="width: 15%">
-<col style="width: 11%">
+<col style="width: 13%">
+<col style="width: 9%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -455,7 +478,7 @@ window.Quarto = {
 </tr>
 </tbody>
 </table>
-<p>Covariance matrix of simulated discount factors (14-day grid, 32,000 paths):</p>
+<p>I also like to check the covariance matrix of the simulated discount factors. For this I chose a 14 day grid and 32,000 paths:</p>
 <table class="caption-top table">
 <thead>
 <tr class="header">
@@ -502,7 +525,7 @@ window.Quarto = {
 </section>
 <section id="problem-22-monte-carlo-valuation" class="level2">
 <h2 class="anchored" data-anchor-id="problem-22-monte-carlo-valuation">Problem 22: Monte Carlo Valuation</h2>
-<p>Use your Hull-White paths to compute the values and variances of the calibration CMTs up to 10 years, and our 15-year MBS with an OAS of 2.52%. Focus on spot values only (settle date = market close).</p>
+<p>Use your Hull-White based paths to compute the values and their variances of our calibration CMTs up until ten years and our 15 year MBS with an OAS of 2.52%. For technical reasons, I want to focus only on spot values as opposed to forwards, so keep your settle date equal to your market close.</p>
 <p><strong>Example Output:</strong></p>
 <table class="caption-top table">
 <thead>
@@ -744,14 +767,14 @@ window.Quarto = {
 </table>
 <hr>
 </section>
-<section id="problem-23-antithetic-variates" class="level2">
-<h2 class="anchored" data-anchor-id="problem-23-antithetic-variates">Problem 23: Antithetic Variates</h2>
-<p>Looking at the results above, you may notice that the variances can be quite high and Monte Carlo values are a bit off from the forward curve results. <a href="https://en.wikipedia.org/wiki/Antithetic_variates">Antithetic variates</a> is a simple and elegant variance reduction technique. If we ask for 100 paths, we draw 50 and add 50 more that are the negatives of the original 50.</p>
-<p>For example, if the first path of draws from the standard normal is:</p>
+<section id="problem-23-antithetics" class="level2">
+<h2 class="anchored" data-anchor-id="problem-23-antithetics">Problem 23: Antithetics</h2>
+<p>If you look at the results above, you may notice that the variances can be quite high and the Monte Carlo values are a bit off from what we get from our forward curve. Using <a href="https://en.wikipedia.org/wiki/Antithetic_variates">Antithetic Variates</a> is a simple and elegant way to sharpen our results. In our case, if we ask for 100 paths, we draw 50 and add 50 more which are the negatives of the original 50.</p>
+<p>Let’s say the first path of draws from our normal distribution is :</p>
 <p><code>.5, -.25, .01, .02, ...</code></p>
-<p>we negate each entry to get:</p>
-<p><code>-.5, .25, -.01, -.02, ...</code></p>
-<p>Update your code, rerun the securities with antithetics, and compare results. Use the correct equation for antithetic variance.</p>
+<p>We simply negate each entry to get:</p>
+<p><code>-.5 .25, -.01, -.02, ...</code></p>
+<p>Update your code, rerun the securities with antithetics, and compare the results. Make sure you use the correct equation for antithetic variance.</p>
 <p><strong>Example Output:</strong></p>
 <table class="caption-top table">
 <thead>
@@ -995,9 +1018,7 @@ window.Quarto = {
 </section>
 <section id="problem-24-trinomial-lattices" class="level2">
 <h2 class="anchored" data-anchor-id="problem-24-trinomial-lattices">Problem 24: Trinomial Lattices</h2>
-<div class="under-construction">
-<p><strong>Under Construction</strong> — coming in a future update.</p>
-</div>
+<p><strong>[UNDER CONSTRUCTION]</strong></p>
 
 
 </section>
@@ -1076,7 +1097,7 @@ window.Quarto = {
     }
       var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
       var mailtoRegex = new RegExp(/^mailto:/);
-        var filterRegex = new RegExp('/' + window.location.host + '/');
+        var filterRegex = new RegExp("https:\/\/tyro2001\.github\.io\/mbs-analytics\/");
       var isInternal = (href) => {
           return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
       }

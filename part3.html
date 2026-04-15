@@ -215,7 +215,7 @@ window.Quarto = {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#problem-9-zero-coupon-bonds" id="toc-problem-9-zero-coupon-bonds" class="nav-link active" data-scroll-target="#problem-9-zero-coupon-bonds">Problem 9: Zero Coupon Bonds</a></li>
+  <li><a href="#problem-9-zero-coupon-bonds-and-discount-factors" id="toc-problem-9-zero-coupon-bonds-and-discount-factors" class="nav-link active" data-scroll-target="#problem-9-zero-coupon-bonds-and-discount-factors">Problem 9: Zero Coupon Bonds and Discount Factors</a></li>
   <li><a href="#problem-10-present-value" id="toc-problem-10-present-value" class="nav-link" data-scroll-target="#problem-10-present-value">Problem 10: Present Value</a></li>
   <li><a href="#problem-11-price" id="toc-problem-11-price" class="nav-link" data-scroll-target="#problem-11-price">Problem 11: Price</a></li>
   <li><a href="#problem-12-option-adjusted-spread" id="toc-problem-12-option-adjusted-spread" class="nav-link" data-scroll-target="#problem-12-option-adjusted-spread">Problem 12: Option Adjusted Spread</a></li>
@@ -245,31 +245,85 @@ window.Quarto = {
 </header>
 
 
-<section id="problem-9-zero-coupon-bonds" class="level2">
-<h2 class="anchored" data-anchor-id="problem-9-zero-coupon-bonds">Problem 9: Zero Coupon Bonds</h2>
-<p>Consider a bank account that accrues interest continuously at rate <span class="math inline">\(r\)</span>. If we invest <span class="math inline">\(B(0)\)</span> dollars today, after two years we have:</p>
-<p><span class="math display">\[B(2) = B(0) \cdot e^{2r}\]</span></p>
+<section id="problem-9-zero-coupon-bonds-and-discount-factors" class="level2">
+<h2 class="anchored" data-anchor-id="problem-9-zero-coupon-bonds-and-discount-factors">Problem 9: Zero Coupon Bonds and Discount Factors</h2>
+<p>We will go into the term curve and forward rates more deeply in future problems, but intuitively we know that a dollar paid in the future is worth less than a dollar paid today in the case where interest rates are positive. To illustrate this let’s say I can earn continuously compounded interest for two years at rate <span class="math inline">\(r &gt; 0\)</span> in a bank account. I can back out the value of a dollar paid two years in the future by computing the starting balance, <span class="math inline">\(B(0)\)</span>, today that will yield a dollar two years from now, <span class="math inline">\(B(2)\)</span>. So we have:</p>
+<p><span class="math display">\[ B(0) e^{2r} = B(2) = 1 \]</span></p>
 <p>which implies:</p>
-<p><span class="math display">\[B(0) = \frac{1}{e^{2r}} = e^{-2r}\]</span></p>
-<p><span class="math inline">\(B(0)\)</span> is today’s value of a dollar paid two years in the future. It is also the price of a <strong>Zero Coupon Bond</strong> (ZCB) — a bond that pays one dollar at maturity but accrues no interest during its life.</p>
-<p>ZCBs are closely related to <strong>Discount Factors</strong> (DFs). In general, if we have a function <span class="math inline">\(r(t)\)</span> that produces continuously compounded discount rates, the discount factor for the period from <span class="math inline">\(t\)</span> to <span class="math inline">\(T\)</span> is:</p>
-<p><span class="math display">\[DF(t, T) = e^{-\int_t^T r(u)\, du}\]</span></p>
-<p>In the special case where <span class="math inline">\(r(u)\)</span> comes from a forward curve, the ZCB and DF are equivalent. We will revisit this distinction in future exercises.</p>
-<div class="nb">
-<p><strong>NB:</strong> <span class="math inline">\(ZCB(t, T) = \dfrac{ZCB(0, T)}{ZCB(0, t)}\)</span></p>
-</div>
-<p>Implement a function that computes ZCBs at arbitrary dates greater than or equal to market close. You will pass it <span class="math inline">\(r(t)\)</span>, which for now we assume is a step function. We also assume 365 days in a year. Use the rates provided in the code block below and assume the knots are the first of every month starting at 10/1/2024.</p>
+<p><span class="math display">\[ B(0) = \frac{1}{e^{2r}} = e^{-2r} \]</span></p>
+<p><span class="math inline">\(B(0)\)</span> is today’s value of a dollar paid two years in the future. It is also the price of a <span class="math inline">\(\textit{Zero Coupon Bond}\)</span> (<span class="math inline">\(ZCB\)</span>) which is a bond that pays one dollar at maturity, but accrues no interest during its life.</p>
+<p>ZCBs are closely related to <span class="math inline">\(\textit{Discount Factors}\)</span> (<span class="math inline">\(DFs\)</span>). In general, if I have a function <span class="math inline">\(r(t)\)</span> that produces continuously compounded discount rates, I can compute the discount factor for the period that starts at time <span class="math inline">\(t\)</span> and ends at time <span class="math inline">\(T\)</span> with the following equation:</p>
+<p><span class="math display">\[ DF(t, T) = e^{-\int_t^T{r(u)} du}\]</span></p>
+<p>In the special case where <span class="math inline">\(r(u)\)</span> comes from a forward curve, the ZCB and the DF are equivalent. We will revisit this distinction in future exercises.</p>
+<p><strong>NB:</strong> <span class="math inline">\(ZCB(t, T) = \frac{ZCB(0, T)}{ZCB(0, t)}\)</span></p>
+<p>Implement a function that computes <strong>ZCBs</strong> at arbitrary dates that are greater than or equal to the market close. You will need to pass it <span class="math inline">\(r(t)\)</span>. For now we can assume it is a step function. We also assume there are 365 days in a year. Use the rates provided in the code block below and assume the knots are the first of every month starting at 10/1/2024.</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="co">## these rates (decimal) were generated by one solution to problem 16</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> short_rates():</span>
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    discount_rates <span class="op">=</span> np.array([</span>
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>        <span class="fl">0.040861075</span>, <span class="fl">0.040759356</span>, <span class="fl">0.040585068</span>, <span class="fl">0.040325820</span>, <span class="fl">0.039980431</span>, <span class="fl">0.039554176</span>,</span>
 <span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>        <span class="fl">0.039042074</span>, <span class="fl">0.038446557</span>, <span class="fl">0.037766254</span>, <span class="fl">0.037002718</span>, <span class="fl">0.036154661</span>, <span class="fl">0.035225321</span>,</span>
 <span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>        <span class="fl">0.034238589</span>, <span class="fl">0.033344373</span>, <span class="fl">0.032562165</span>, <span class="fl">0.031897518</span>, <span class="fl">0.031350018</span>, <span class="fl">0.030912406</span>,</span>
 <span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>        <span class="fl">0.030591328</span>, <span class="fl">0.030384055</span>, <span class="fl">0.030292503</span>, <span class="fl">0.030314527</span>, <span class="fl">0.030452173</span>, <span class="fl">0.030703158</span>,</span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>        <span class="co"># ... (full array in notebook)</span></span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>    ])</span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> discount_rates</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>        <span class="fl">0.031049646</span>, <span class="fl">0.031387648</span>, <span class="fl">0.031702604</span>, <span class="fl">0.031991605</span>, <span class="fl">0.032254552</span>, <span class="fl">0.032492949</span>,</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>        <span class="fl">0.032705315</span>, <span class="fl">0.032892379</span>, <span class="fl">0.033053637</span>, <span class="fl">0.033189508</span>, <span class="fl">0.033299633</span>, <span class="fl">0.033384448</span>,</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>        <span class="fl">0.033448149</span>, <span class="fl">0.033514772</span>, <span class="fl">0.033587738</span>, <span class="fl">0.033667705</span>, <span class="fl">0.033754823</span>, <span class="fl">0.033848716</span>,</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>        <span class="fl">0.033949760</span>, <span class="fl">0.034057623</span>, <span class="fl">0.034172510</span>, <span class="fl">0.034294188</span>, <span class="fl">0.034422880</span>, <span class="fl">0.034558505</span>,</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>        <span class="fl">0.034700961</span>, <span class="fl">0.034850405</span>, <span class="fl">0.035006596</span>, <span class="fl">0.035169720</span>, <span class="fl">0.035339634</span>, <span class="fl">0.035515994</span>,</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>        <span class="fl">0.035699162</span>, <span class="fl">0.035888961</span>, <span class="fl">0.036085517</span>, <span class="fl">0.036288764</span>, <span class="fl">0.036498727</span>, <span class="fl">0.036715182</span>,</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>        <span class="fl">0.036936252</span>, <span class="fl">0.037150238</span>, <span class="fl">0.037355594</span>, <span class="fl">0.037551959</span>, <span class="fl">0.037739397</span>, <span class="fl">0.037918447</span>,</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>        <span class="fl">0.038088658</span>, <span class="fl">0.038250113</span>, <span class="fl">0.038402710</span>, <span class="fl">0.038546580</span>, <span class="fl">0.038681569</span>, <span class="fl">0.038807718</span>,</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>        <span class="fl">0.038925211</span>, <span class="fl">0.039034003</span>, <span class="fl">0.039134340</span>, <span class="fl">0.039226066</span>, <span class="fl">0.039309124</span>, <span class="fl">0.039384080</span>,</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>        <span class="fl">0.039450448</span>, <span class="fl">0.039508350</span>, <span class="fl">0.039557685</span>, <span class="fl">0.039598683</span>, <span class="fl">0.039631106</span>, <span class="fl">0.039655318</span>,</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>        <span class="fl">0.039672646</span>, <span class="fl">0.039692661</span>, <span class="fl">0.039716521</span>, <span class="fl">0.039744597</span>, <span class="fl">0.039776962</span>, <span class="fl">0.039813387</span>,</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>        <span class="fl">0.039854029</span>, <span class="fl">0.039898738</span>, <span class="fl">0.039947530</span>, <span class="fl">0.040000344</span>, <span class="fl">0.040057394</span>, <span class="fl">0.040118561</span>,</span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>        <span class="fl">0.040183865</span>, <span class="fl">0.040253245</span>, <span class="fl">0.040326682</span>, <span class="fl">0.040404148</span>, <span class="fl">0.040485649</span>, <span class="fl">0.040570885</span>,</span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>        <span class="fl">0.040660097</span>, <span class="fl">0.040753236</span>, <span class="fl">0.040850358</span>, <span class="fl">0.040951346</span>, <span class="fl">0.041056331</span>, <span class="fl">0.041165298</span>,</span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>        <span class="fl">0.041278205</span>, <span class="fl">0.041395062</span>, <span class="fl">0.041515914</span>, <span class="fl">0.041640709</span>, <span class="fl">0.041769373</span>, <span class="fl">0.041901653</span>,</span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>        <span class="fl">0.042037732</span>, <span class="fl">0.042177653</span>, <span class="fl">0.042321462</span>, <span class="fl">0.042469129</span>, <span class="fl">0.042620584</span>, <span class="fl">0.042775822</span>,</span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>        <span class="fl">0.042934012</span>, <span class="fl">0.043090162</span>, <span class="fl">0.043243690</span>, <span class="fl">0.043394281</span>, <span class="fl">0.043542046</span>, <span class="fl">0.043687055</span>,</span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>        <span class="fl">0.043829153</span>, <span class="fl">0.043968508</span>, <span class="fl">0.044104948</span>, <span class="fl">0.044238640</span>, <span class="fl">0.044369391</span>, <span class="fl">0.044497419</span>,</span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>        <span class="fl">0.044622560</span>, <span class="fl">0.044744873</span>, <span class="fl">0.044864389</span>, <span class="fl">0.044981117</span>, <span class="fl">0.045095102</span>, <span class="fl">0.045206448</span>,</span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>        <span class="fl">0.045315066</span>, <span class="fl">0.045420992</span>, <span class="fl">0.045524115</span>, <span class="fl">0.045624523</span>, <span class="fl">0.045722242</span>, <span class="fl">0.045817146</span>,</span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>        <span class="fl">0.045909333</span>, <span class="fl">0.045998780</span>, <span class="fl">0.046085532</span>, <span class="fl">0.046169579</span>, <span class="fl">0.046250930</span>, <span class="fl">0.046329840</span>,</span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>        <span class="fl">0.046406097</span>, <span class="fl">0.046479670</span>, <span class="fl">0.046550639</span>, <span class="fl">0.046619009</span>, <span class="fl">0.046684744</span>, <span class="fl">0.046747930</span>,</span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>        <span class="fl">0.046808589</span>, <span class="fl">0.046866693</span>, <span class="fl">0.046922229</span>, <span class="fl">0.046975235</span>, <span class="fl">0.047025703</span>, <span class="fl">0.047073849</span>,</span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a>        <span class="fl">0.047119462</span>, <span class="fl">0.047162633</span>, <span class="fl">0.047203328</span>, <span class="fl">0.047241661</span>, <span class="fl">0.047277484</span>, <span class="fl">0.047310789</span>,</span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a>        <span class="fl">0.047341569</span>, <span class="fl">0.047369859</span>, <span class="fl">0.047395866</span>, <span class="fl">0.047419346</span>, <span class="fl">0.047440414</span>, <span class="fl">0.047459229</span>,</span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a>        <span class="fl">0.047475608</span>, <span class="fl">0.047489635</span>, <span class="fl">0.047501287</span>, <span class="fl">0.047510627</span>, <span class="fl">0.047517491</span>, <span class="fl">0.047521999</span>,</span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a>        <span class="fl">0.047524138</span>, <span class="fl">0.047523899</span>, <span class="fl">0.047521289</span>, <span class="fl">0.047516311</span>, <span class="fl">0.047508938</span>, <span class="fl">0.047499283</span>,</span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a>        <span class="fl">0.047487231</span>, <span class="fl">0.047472937</span>, <span class="fl">0.047456291</span>, <span class="fl">0.047437449</span>, <span class="fl">0.047416267</span>, <span class="fl">0.047392752</span>,</span>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a>        <span class="fl">0.047366903</span>, <span class="fl">0.047338857</span>, <span class="fl">0.047308643</span>, <span class="fl">0.047276129</span>, <span class="fl">0.047241392</span>, <span class="fl">0.047204511</span>,</span>
+<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a>        <span class="fl">0.047165371</span>, <span class="fl">0.047124100</span>, <span class="fl">0.047080648</span>, <span class="fl">0.047035003</span>, <span class="fl">0.046987160</span>, <span class="fl">0.046936952</span>,</span>
+<span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a>        <span class="fl">0.046884630</span>, <span class="fl">0.046830073</span>, <span class="fl">0.046773425</span>, <span class="fl">0.046714507</span>, <span class="fl">0.046653476</span>, <span class="fl">0.046590360</span>,</span>
+<span id="cb1-40"><a href="#cb1-40" aria-hidden="true" tabindex="-1"></a>        <span class="fl">0.046525136</span>, <span class="fl">0.046457847</span>, <span class="fl">0.046388437</span>, <span class="fl">0.046316949</span>, <span class="fl">0.046243335</span>, <span class="fl">0.046167575</span>,</span>
+<span id="cb1-41"><a href="#cb1-41" aria-hidden="true" tabindex="-1"></a>        <span class="fl">0.046089832</span>, <span class="fl">0.046009939</span>, <span class="fl">0.045928039</span>, <span class="fl">0.045844024</span>, <span class="fl">0.045757898</span>, <span class="fl">0.045669788</span>,</span>
+<span id="cb1-42"><a href="#cb1-42" aria-hidden="true" tabindex="-1"></a>        <span class="fl">0.045579494</span>, <span class="fl">0.045487142</span>, <span class="fl">0.045392687</span>, <span class="fl">0.045296339</span>, <span class="fl">0.045197808</span>, <span class="fl">0.045097405</span>,</span>
+<span id="cb1-43"><a href="#cb1-43" aria-hidden="true" tabindex="-1"></a>        <span class="fl">0.044994965</span>, <span class="fl">0.044890565</span>, <span class="fl">0.044784178</span>, <span class="fl">0.044675943</span>, <span class="fl">0.044565715</span>, <span class="fl">0.044453609</span>,</span>
+<span id="cb1-44"><a href="#cb1-44" aria-hidden="true" tabindex="-1"></a>        <span class="fl">0.044339642</span>, <span class="fl">0.044223818</span>, <span class="fl">0.044105981</span>, <span class="fl">0.043986127</span>, <span class="fl">0.043864319</span>, <span class="fl">0.043740566</span>,</span>
+<span id="cb1-45"><a href="#cb1-45" aria-hidden="true" tabindex="-1"></a>        <span class="fl">0.043615419</span>, <span class="fl">0.043491278</span>, <span class="fl">0.043368278</span>, <span class="fl">0.043246461</span>, <span class="fl">0.043125890</span>, <span class="fl">0.043006436</span>,</span>
+<span id="cb1-46"><a href="#cb1-46" aria-hidden="true" tabindex="-1"></a>        <span class="fl">0.042888477</span>, <span class="fl">0.042771824</span>, <span class="fl">0.042656419</span>, <span class="fl">0.042542150</span>, <span class="fl">0.042429217</span>, <span class="fl">0.042317276</span>,</span>
+<span id="cb1-47"><a href="#cb1-47" aria-hidden="true" tabindex="-1"></a>        <span class="fl">0.042206554</span>, <span class="fl">0.042097052</span>, <span class="fl">0.041988696</span>, <span class="fl">0.041881652</span>, <span class="fl">0.041775938</span>, <span class="fl">0.041671412</span>,</span>
+<span id="cb1-48"><a href="#cb1-48" aria-hidden="true" tabindex="-1"></a>        <span class="fl">0.041568170</span>, <span class="fl">0.041465872</span>, <span class="fl">0.041364753</span>, <span class="fl">0.041264728</span>, <span class="fl">0.041165871</span>, <span class="fl">0.041068136</span>,</span>
+<span id="cb1-49"><a href="#cb1-49" aria-hidden="true" tabindex="-1"></a>        <span class="fl">0.040971467</span>, <span class="fl">0.040875960</span>, <span class="fl">0.040781567</span>, <span class="fl">0.040688475</span>, <span class="fl">0.040596543</span>, <span class="fl">0.040505910</span>,</span>
+<span id="cb1-50"><a href="#cb1-50" aria-hidden="true" tabindex="-1"></a>        <span class="fl">0.040416271</span>, <span class="fl">0.040327748</span>, <span class="fl">0.040240394</span>, <span class="fl">0.040154010</span>, <span class="fl">0.040068820</span>, <span class="fl">0.039984721</span>,</span>
+<span id="cb1-51"><a href="#cb1-51" aria-hidden="true" tabindex="-1"></a>        <span class="fl">0.039901724</span>, <span class="fl">0.039819807</span>, <span class="fl">0.039739015</span>, <span class="fl">0.039659441</span>, <span class="fl">0.039580983</span>, <span class="fl">0.039503659</span>,</span>
+<span id="cb1-52"><a href="#cb1-52" aria-hidden="true" tabindex="-1"></a>        <span class="fl">0.039427417</span>, <span class="fl">0.039352386</span>, <span class="fl">0.039278531</span>, <span class="fl">0.039205688</span>, <span class="fl">0.039133879</span>, <span class="fl">0.039063096</span>,</span>
+<span id="cb1-53"><a href="#cb1-53" aria-hidden="true" tabindex="-1"></a>        <span class="fl">0.038993429</span>, <span class="fl">0.038924780</span>, <span class="fl">0.038857304</span>, <span class="fl">0.038790914</span>, <span class="fl">0.038725614</span>, <span class="fl">0.038661388</span>,</span>
+<span id="cb1-54"><a href="#cb1-54" aria-hidden="true" tabindex="-1"></a>        <span class="fl">0.038598206</span>, <span class="fl">0.038536133</span>, <span class="fl">0.038475055</span>, <span class="fl">0.038415067</span>, <span class="fl">0.038356180</span>, <span class="fl">0.038298392</span>,</span>
+<span id="cb1-55"><a href="#cb1-55" aria-hidden="true" tabindex="-1"></a>        <span class="fl">0.038241570</span>, <span class="fl">0.038185895</span>, <span class="fl">0.038131262</span>, <span class="fl">0.038077682</span>, <span class="fl">0.038025136</span>, <span class="fl">0.037973578</span>,</span>
+<span id="cb1-56"><a href="#cb1-56" aria-hidden="true" tabindex="-1"></a>        <span class="fl">0.037923063</span>, <span class="fl">0.037873528</span>, <span class="fl">0.037825092</span>, <span class="fl">0.037777681</span>, <span class="fl">0.037731354</span>, <span class="fl">0.037686059</span>,</span>
+<span id="cb1-57"><a href="#cb1-57" aria-hidden="true" tabindex="-1"></a>        <span class="fl">0.037641703</span>, <span class="fl">0.037598351</span>, <span class="fl">0.037556014</span>, <span class="fl">0.037514713</span>, <span class="fl">0.037474428</span>, <span class="fl">0.037435056</span>,</span>
+<span id="cb1-58"><a href="#cb1-58" aria-hidden="true" tabindex="-1"></a>        <span class="fl">0.037396681</span>, <span class="fl">0.037359266</span>, <span class="fl">0.037322918</span>, <span class="fl">0.037287542</span>, <span class="fl">0.037253133</span>, <span class="fl">0.037219654</span>,</span>
+<span id="cb1-59"><a href="#cb1-59" aria-hidden="true" tabindex="-1"></a>        <span class="fl">0.037187194</span>, <span class="fl">0.037155646</span>, <span class="fl">0.037124983</span>, <span class="fl">0.037095311</span>, <span class="fl">0.037066608</span>, <span class="fl">0.037038905</span>,</span>
+<span id="cb1-60"><a href="#cb1-60" aria-hidden="true" tabindex="-1"></a>        <span class="fl">0.037012064</span>, <span class="fl">0.036986076</span>, <span class="fl">0.036961020</span>, <span class="fl">0.036936911</span>, <span class="fl">0.036913751</span>, <span class="fl">0.036891611</span>,</span>
+<span id="cb1-61"><a href="#cb1-61" aria-hidden="true" tabindex="-1"></a>        <span class="fl">0.036870354</span>, <span class="fl">0.036849933</span>, <span class="fl">0.036830323</span>, <span class="fl">0.036811646</span>, <span class="fl">0.036793944</span>, <span class="fl">0.036777060</span>,</span>
+<span id="cb1-62"><a href="#cb1-62" aria-hidden="true" tabindex="-1"></a>        <span class="fl">0.036761108</span>, <span class="fl">0.036746041</span>, <span class="fl">0.036731934</span>, <span class="fl">0.036718739</span>, <span class="fl">0.036706458</span>, <span class="fl">0.036695175</span>,</span>
+<span id="cb1-63"><a href="#cb1-63" aria-hidden="true" tabindex="-1"></a>        <span class="fl">0.036684588</span>, <span class="fl">0.036674924</span>, <span class="fl">0.036666076</span>, <span class="fl">0.036658237</span>, <span class="fl">0.036651161</span>, <span class="fl">0.036644896</span>,</span>
+<span id="cb1-64"><a href="#cb1-64" aria-hidden="true" tabindex="-1"></a>        <span class="fl">0.036639625</span>, <span class="fl">0.036635220</span>, <span class="fl">0.036631736</span>, <span class="fl">0.036629110</span>, <span class="fl">0.036627346</span>, <span class="fl">0.036626355</span>,</span>
+<span id="cb1-65"><a href="#cb1-65" aria-hidden="true" tabindex="-1"></a>        <span class="fl">0.036626118</span>])</span>
+<span id="cb1-66"><a href="#cb1-66" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-67"><a href="#cb1-67" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> discount_rates</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p><strong>Example Output:</strong></p>
 <table class="caption-top table">
 <thead>
@@ -301,16 +355,16 @@ window.Quarto = {
 </section>
 <section id="problem-10-present-value" class="level2">
 <h2 class="anchored" data-anchor-id="problem-10-present-value">Problem 10: Present Value</h2>
-<p>Now that we can compute ZCBs, we can compute the time-<span class="math inline">\(t\)</span> value <span class="math inline">\(V(t)\)</span> by taking the dot product of the vector of future cash flows with a vector of ZCBs corresponding to the payment dates (not accrual dates) relative to time <span class="math inline">\(t\)</span>.</p>
+<p>Now that we have a way to compute <span class="math inline">\(ZCBs\)</span> we can use them to compute the time <span class="math inline">\(t\)</span> value, <span class="math inline">\(V(t)\)</span>, by taking the dot product of the vector of future cash flows with a vector of <span class="math inline">\(ZCBs\)</span> that correspond to the payment (as opposed to the accrual) dates relative to the time <span class="math inline">\(t\)</span>.</p>
 <p>The basic steps are:</p>
-<ol type="1">
-<li>Use the settle and accrual dates to determine which cash flows the investor purchased</li>
-<li>Use the settle date to determine <span class="math inline">\(t\)</span> for discounting</li>
-<li>For each relevant payment date <span class="math inline">\(T_n\)</span>, compute <span class="math inline">\(ZCB(t, T_n)\)</span></li>
-<li>Take the dot product of your cash flow and ZCB vectors to compute <span class="math inline">\(V(t)\)</span></li>
-</ol>
-<p>When <span class="math inline">\(t &gt; 0\)</span>, the quantity computed is called a <strong>forward value</strong> — the number of dollars at which one would buy or sell the instrument at time <span class="math inline">\(t\)</span>.</p>
-<p>Create a function that implements the algorithm above.</p>
+<ul>
+<li>Use the settle and accrual dates to determine the cash flows the investor bought</li>
+<li>Use the settle date to determine time t for discounting</li>
+<li>For each relevant payment date <span class="math inline">\(T_n\)</span>, compute the <span class="math inline">\(ZCB(t, T_n)\)</span></li>
+<li>Take the dot product of your cash flow and <span class="math inline">\(ZCB\)</span> vectors to compute <span class="math inline">\(V(t)\)</span></li>
+</ul>
+<p>In the case where <span class="math inline">\(t&gt;0\)</span> the quantity computed is called a <strong>forward value</strong>. This is the number of dollars one would buy or sell the instrument at time <span class="math inline">\(t\)</span>.</p>
+<p>Create a function that implements the above alogrithm. It might be useful to wrap the required data and algorithms in a class though it isn’t necessary.</p>
 <p><strong>Example Output:</strong></p>
 <p>Assuming the following cash flow schedule:</p>
 <table class="caption-top table">
@@ -344,7 +398,7 @@ window.Quarto = {
 </tr>
 </tbody>
 </table>
-<p>Your code should produce:</p>
+<p>Your code should produce the following values:</p>
 <table class="caption-top table">
 <thead>
 <tr class="header">
@@ -375,19 +429,24 @@ window.Quarto = {
 </section>
 <section id="problem-11-price" class="level2">
 <h2 class="anchored" data-anchor-id="problem-11-price">Problem 11: Price</h2>
-<p>In Problem 10 we computed the present value of all future cash flows relative to the trade settle date. Now we want to compute how the bond price would be quoted in the market, ultimately arriving at the <strong>clean price</strong>.</p>
-<p>First, normalize the value by multiplying by 100 and dividing by the balance at the settle date. This gives the <strong>dirty price</strong>:</p>
-<p><span class="math display">\[\text{Dirty Price} = \text{Value} \times \frac{100}{\text{Balance at Settle}}\]</span></p>
-<p>For background on clean and dirty prices, and accrued interest, see:</p>
+<p>In the previous problem, we computed the present value of all future cash flows relative to the trade settle date. Now, we want to focus on how the bond price would be quoted in the market. Ultimately, we aim to calculate the <strong>clean price</strong>.</p>
+<p>To start, we normalize the value by multiplying it by 100 and dividing it by the balance at the settle date. This gives us the <strong>dirty price</strong>. In other words:</p>
+<p><span class="math display">\[
+\text{Dirty Price} = \text{Value} \times \frac{100}{\text{Balance at Settle}}
+\]</span></p>
+<p>For a detailed explanation of the terms <strong>dirty price</strong> and <strong>clean price</strong>, refer to the following resources:</p>
 <ul>
 <li><a href="https://en.wikipedia.org/wiki/Dirty_price">Dirty Price (Wikipedia)</a></li>
 <li><a href="https://en.wikipedia.org/wiki/Clean_price">Clean Price (Wikipedia)</a></li>
+</ul>
+<p>Both articles mention the concept of accrued interest. Before we compute accrued interest for our bond, we need to understand <strong>day count conventions</strong>. You can read more about them here:</p>
+<ul>
 <li><a href="https://en.wikipedia.org/wiki/Day_count_convention">Day Count Convention (Wikipedia)</a></li>
 </ul>
-<p>Our bond uses the <strong>30/360</strong> day count method. Compute the interest accrued from the partial period running from the first of the trade settle month to the trade settle date. Excel’s <code>DAYS360</code> function is a useful reference.</p>
-<p><strong>Task:</strong> Write a function that computes the simplest 30/360 method (Bond Basis) described on Wikipedia, and use it to convert a dirty value to a clean price.</p>
+<p>Our bond uses the <strong>30/360</strong> day count method. We need to compute the interest accrued from the <strong>partial period</strong> that runs from the first of the trade settle month to the trade settle date. Excel has a function called <code>DAYS360</code> that is useful for computing this quantity.</p>
+<p><strong>Task</strong>: Write a function that computes the simplest 30/360 method described on Wikipedia (Bond Basis) and use it in another function to convert a (dirty) value to a clean price. It is acceptable to report the dirty price and accrued interest as well.</p>
 <p><strong>Example Output:</strong></p>
-<p>Results on our 15-year MBS:</p>
+<p>Here are some results on our 15 year MBS</p>
 <table class="caption-top table">
 <thead>
 <tr class="header">
@@ -433,16 +492,15 @@ window.Quarto = {
 </section>
 <section id="problem-12-option-adjusted-spread" class="level2">
 <h2 class="anchored" data-anchor-id="problem-12-option-adjusted-spread">Problem 12: Option Adjusted Spread</h2>
-<p>The prices generated using the above logic often differ from market-observed MBS prices. To reconcile this, an <a href="https://en.wikipedia.org/wiki/Option-adjusted_spread"><strong>Option Adjusted Spread</strong></a> (OAS) is added to the discount rates.</p>
-<p>For simplicity, work with values rather than prices. Given a discount date grid, discount rate grid, settlement date, cash flows, and a target value, write a function to compute the OAS that aligns the computed price with the target value.</p>
-<div class="nb">
-<p><strong>NB:</strong> This involves discounting only. It does not change cash flows. The OAS is a constant spread applied to the continuously compounded discount rates. Since spreads may vary across securities, do not adjust the discount rates directly.</p>
-</div>
-<div class="nb">
-<p><strong>NB:</strong> A technical simplification is made for forward settles. The forward value equation used here is: <span class="math display">\[V(t, OAS) = \frac{V(0, OAS)}{ZCB(t, OAS)}\]</span> rather than the technically correct: <span class="math display">\[V(t, OAS) = \frac{V(0, OAS)}{ZCB(t, 0)}\]</span></p>
-</div>
+<p>The prices generated using the logic above often (if not always) differ from the market-observed prices of MBS. To reconcile this difference, an <a href="https://en.wikipedia.org/wiki/Option-adjusted_spread"><strong>Option Adjusted Spread</strong></a> (OAS) is added to the discount rates.</p>
+<p>To keep things easier let’s work with values instead of prices. Given a discount date grid, discount rate grid, settlement date, cash flows, and a target value, write a function to compute the OAS that aligns the computed price with the target value.</p>
+<p><strong>NB:</strong> This is only involves discounting. It doesn’t change your cash flows. The OAS is a constant spread applied to the continuously compounded discount rates. Since the spreads may vary across securities, it’s advisable not to adjust the discount rates directly.</p>
+<p><strong>NB:</strong> I am ignoring a technical issue for forward settles here. My forward value equation is:</p>
+<p><span class="math display">\[ V(t, OAS) = \frac{V(0, OAS)}{ZCB(t, OAS)}\]</span></p>
+<p>instead of</p>
+<p><span class="math display">\[ V(t, OAS) = \frac{V(0, OAS)}{ZCB(t, 0.0)}\]</span></p>
 <p><strong>Example Output:</strong></p>
-<p>Results for our 15-year MBS with target value of 100:</p>
+<p>Here are results from our 15 year MBS where the target is always 100:</p>
 <table class="caption-top table">
 <thead>
 <tr class="header">
@@ -547,7 +605,7 @@ window.Quarto = {
     }
       var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
       var mailtoRegex = new RegExp(/^mailto:/);
-        var filterRegex = new RegExp('/' + window.location.host + '/');
+        var filterRegex = new RegExp("https:\/\/tyro2001\.github\.io\/mbs-analytics\/");
       var isInternal = (href) => {
           return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
       }

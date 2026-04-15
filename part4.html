@@ -180,10 +180,10 @@ window.Quarto = {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#problem-13-forward-curve-constant-maturity-treasuries" id="toc-problem-13-forward-curve-constant-maturity-treasuries" class="nav-link active" data-scroll-target="#problem-13-forward-curve-constant-maturity-treasuries">Problem 13: Forward Curve — Constant Maturity Treasuries</a></li>
-  <li><a href="#problem-14-forward-curve-bootstrapping" id="toc-problem-14-forward-curve-bootstrapping" class="nav-link" data-scroll-target="#problem-14-forward-curve-bootstrapping">Problem 14: Forward Curve — Bootstrapping</a></li>
+  <li><a href="#problem-13-forward-curve---constant-maturity-treasuries" id="toc-problem-13-forward-curve---constant-maturity-treasuries" class="nav-link active" data-scroll-target="#problem-13-forward-curve---constant-maturity-treasuries">Problem 13: Forward Curve - Constant Maturity Treasuries</a></li>
+  <li><a href="#problem-14-forward-curve---bootstrapping" id="toc-problem-14-forward-curve---bootstrapping" class="nav-link" data-scroll-target="#problem-14-forward-curve---bootstrapping">Problem 14: Forward Curve - Bootstrapping</a></li>
   <li><a href="#problem-15-forward-bond-rates" id="toc-problem-15-forward-bond-rates" class="nav-link" data-scroll-target="#problem-15-forward-bond-rates">Problem 15: Forward Bond Rates</a></li>
-  <li><a href="#problem-16-forward-curve-an-improved-calibration-method" id="toc-problem-16-forward-curve-an-improved-calibration-method" class="nav-link" data-scroll-target="#problem-16-forward-curve-an-improved-calibration-method">Problem 16: Forward Curve — An Improved Calibration Method</a></li>
+  <li><a href="#problem-16-forward-curve---an-improved-calibration-method" id="toc-problem-16-forward-curve---an-improved-calibration-method" class="nav-link" data-scroll-target="#problem-16-forward-curve---an-improved-calibration-method">Problem 16: Forward Curve - An Improved Calibration Method</a></li>
   </ul>
 </nav>
     </div>
@@ -210,19 +210,24 @@ window.Quarto = {
 </header>
 
 
-<section id="problem-13-forward-curve-constant-maturity-treasuries" class="level2">
-<h2 class="anchored" data-anchor-id="problem-13-forward-curve-constant-maturity-treasuries">Problem 13: Forward Curve — Constant Maturity Treasuries</h2>
-<p>To calibrate a forward curve using market inputs, we first need to generate cash flows for our calibration instruments. Although mortgage shops typically use a SOFR-based curve, calculating the floating rate side of a SOFR swap is tedious and doesn’t add much intuition for curve construction. Instead, we will use <strong>Constant Maturity Treasuries</strong> (CMTs). CMTs are hypothetical <a href="https://www.investopedia.com/terms/b/bulletbond.asp">bullet bonds</a> that behave like Treasury bonds if they were issued daily, with <a href="https://en.wikipedia.org/wiki/Spot_contract#Bonds_and_swaps">spot</a> <a href="https://en.wikipedia.org/wiki/Par_value">par</a> coupons <a href="https://home.treasury.gov/resource-center/data-chart-center/interest-rates/TextView?type=daily_treasury_yield_curve&amp;field_tdr_date_value_month=202408">published</a> by the U.S. Treasury Department.</p>
-<p><strong>Task:</strong> Create a function that generates cash flows for these bonds. Inputs:</p>
+<section id="problem-13-forward-curve---constant-maturity-treasuries" class="level2">
+<h2 class="anchored" data-anchor-id="problem-13-forward-curve---constant-maturity-treasuries">Problem 13: Forward Curve - Constant Maturity Treasuries</h2>
+<p>To calibrate a forward curve using market inputs, we first need to generate cash flows for our calibration instruments. Although mortgage shops typically use a SOFR-based curve, calculating the floating rate side of a SOFR swap is tedious and doesn’t add much to the inutituion of curve construction. Therefore, we’ll use <strong>Constant Maturity Treasuries</strong> (<span class="math inline">\(\textit{CMTs}\)</span>) instead. CMTs are hypothetical <a href="https://www.investopedia.com/terms/b/bulletbond.asp#:~:text=Financial%20Review%20Board-,What%20Is%20a%20Bullet%20Bond%3F,means%20they%20are%20non%2Dcallable.">bullet bonds</a> that behave like Treasury bonds if they were issued daily, with <a href="https://en.wikipedia.org/wiki/Spot_contract#Bonds_and_swaps">spot</a> <a href="https://en.wikipedia.org/wiki/Par_value">par</a> coupons <a href="https://home.treasury.gov/resource-center/data-chart-center/interest-rates/TextView?type=daily_treasury_yield_curve&amp;field_tdr_date_value_month=202408">published</a> by the U.S. Treasury Department.</p>
+<p><strong>Task</strong>: Create a function that generates the cash flows for these bonds. The function should take the following inputs:</p>
 <ul>
-<li><strong>Bond effective date</strong> (start date of the bond)</li>
+<li><strong>Bond Effective date</strong> (start date of the bond)</li>
 <li><strong>Balance</strong> (face amount)</li>
-<li><strong>Annual coupon rate</strong> (decimal form)</li>
-<li><strong>Number of years</strong> (integer)</li>
+<li><strong>Annual coupon rate</strong> (in decimal form)</li>
+<li><strong>Number of years</strong> (as an integer)</li>
 </ul>
-<p>The function should return two vectors: the payment dates and the corresponding cash flows. The first cash flow occurs six months from the effective date; the final one occurs the specified number of years after the effective date. Each cash flow includes the coupon payment (<code>balance * coupon / 2</code>), with the final cash flow also including principal repayment. Raise an error if the day of month is greater than 28.</p>
+<p>The function should return two vectors:</p>
+<ul>
+<li><strong>The payment dates</strong></li>
+<li><strong>The corresponding bond cash flows</strong></li>
+</ul>
+<p>The first cash flow should occur six months from the effective date, and the final one should be paid the specified number of years after the effective date. Each cash flow should include the coupon payment (calculated as <code>balance * coupon / 2</code>), with the final cash flow also including the principal repayment. To avoid complications with dates, the function should raise an error if the day of the month is greater than 28.</p>
 <p><strong>Example Output:</strong></p>
-<p>With inputs <code>10/1/2024</code>, balance <code>100</code>, coupon <code>0.05</code>, and term <code>2</code> years:</p>
+<p>With inputs <code>10/1/2024</code>, <code>100</code> (balance), <code>0.05</code> (annual coupon), and <code>2</code> (years), the function should return:</p>
 <table class="caption-top table">
 <thead>
 <tr class="header">
@@ -255,22 +260,14 @@ window.Quarto = {
 </table>
 <hr>
 </section>
-<section id="problem-14-forward-curve-bootstrapping" class="level2">
-<h2 class="anchored" data-anchor-id="problem-14-forward-curve-bootstrapping">Problem 14: Forward Curve — Bootstrapping</h2>
-<p>A forward curve of instantaneous discount rates maps future points in time to discount rates. This function helps determine the present value of cash flows occurring at those specific future dates. The formulas are the same as in Problem 9.</p>
-<p>Forward curves aren’t directly observable — they must be calibrated from market prices or yields. A common misunderstanding is that forward rates represent the market’s forecast of future rates. In fact, forward rates tell you the rates you can lock in <em>today</em> for accrual periods starting in the future. They reflect what you can secure today for a future period, not necessarily what the market expects rates to be.</p>
-<p>The simplest calibration technique is the <strong>bootstrap method</strong>, which constructs a curve from observed prices of calibration securities. Our calibration instruments are CMTs. To begin:</p>
-<ol type="1">
-<li>Select a market close date from the <a href="https://home.treasury.gov/resource-center/data-chart-center/interest-rates/">Treasury Department’s CMT website</a> and gather par yields for maturities from 1 to 30 years.</li>
-<li>Create a date grid starting from the close date that includes each bond’s maturity date.</li>
-<li>Construct a step function of instantaneous, continuously compounded discount rates with knots based on the maturity grid.</li>
-<li>The method is called a “bootstrap” because you solve sequentially: find the constant rate from 0 to 1 year that produces par for the 1-year bond, lock it in, then solve for the 2-year, and so on until the 30-year bond.</li>
-</ol>
-<div class="nb">
-<p><strong>NB:</strong> Your ZCB calculator may have assumed a uniform grid of discount rates. You may need to generalize it to handle an arbitrary step function structure.</p>
-</div>
+<section id="problem-14-forward-curve---bootstrapping" class="level2">
+<h2 class="anchored" data-anchor-id="problem-14-forward-curve---bootstrapping">Problem 14: Forward Curve - Bootstrapping</h2>
+<p>A forward curve of instantaneous discount rates is a function that maps future points in time to discount rates. This function helps determine the present value of cash flows occurring at those specific future dates. The formulas are the same as the ninth problem above that deals with ZCBs.</p>
+<p>Forward curves aren’t directly observable and must be calibrated from market prices or yields of financial instruments like bonds or swaps. A common misunderstanding is that the forward rate trajectory represents the market’s forecast of future rates. In fact, forward rates tell you the rates you can lock in today for accrual periods starting in the future (t ≥ 0). They don’t necessarily reflect the expected market rate at time t, but rather the rate you can secure today for that future period.</p>
+<p>The simplest forward curve calibration technique is the bootstrap method, which is used to construct a curve from the observed prices of calibration securities. For the reasons stated in the problem above, our calibration instruments will be CMTs. To begin, select a market close date from the Treasury Department’s CMT website and gather the par yields (coupon rates) for Treasury bonds with maturities from 1 to 30 years. Next, create a date grid starting from the closing date that includes the maturity dates of each bond. Then, construct a step function of instantaneous, continuously compounded discount rates, with knots based on the maturity grid. The method is called a ‘bootstrap’ because you solve sequentially for the constant rate from time 0 to 1 year that produces a price equal to par for the one-year bond, lock that rate in, and repeat the process for subsequent bonds, building on the previously determined rates, until you reach the 30-year bond.</p>
+<p>Just a note: Your ZCB (Zero-Coupon Bond) calculator might have assumed a uniform grid of discount rates, but that’s not the case here. You may need to generalize your code further to account for the specific structure of the discount rates we’re dealing with.</p>
 <p><strong>Example Output:</strong></p>
-<p>Rates pulled on 10/1/2024:</p>
+<p>The following rates were pulled on 10/1/2024:</p>
 <table class="caption-top table">
 <thead>
 <tr class="header">
@@ -313,7 +310,7 @@ window.Quarto = {
 </tr>
 </tbody>
 </table>
-<p>Bootstrap output (effective date 10/1/2024):</p>
+<p>Bootstrap a curve using the above rates and assume that the effective date is 10/1/2024. Here is the output:</p>
 <table class="caption-top table">
 <thead>
 <tr class="header">
@@ -356,17 +353,12 @@ window.Quarto = {
 </tr>
 </tbody>
 </table>
-<div class="nb">
-<p><strong>NB:</strong> Time is not an integer — it is based on a 365-day year assumption.</p>
-</div>
+<p><strong>NB</strong>: Note that time is not an integer, as it is based on a 365-day year assumption.</p>
 <hr>
 </section>
 <section id="problem-15-forward-bond-rates" class="level2">
 <h2 class="anchored" data-anchor-id="problem-15-forward-bond-rates">Problem 15: Forward Bond Rates</h2>
-<p>Now that you have a forward curve, write a function to calculate the coupon rate required to produce a par price for a given semi-annual bond. The function should take a start date <span class="math inline">\(t\)</span> (<span class="math inline">\(\geq\)</span> market close) and a maturity date <span class="math inline">\(T\)</span> (<span class="math inline">\(\geq t\)</span>). If <span class="math inline">\(t\)</span> is the market close and <span class="math inline">\(T\)</span> matches one of your calibration maturities, the function should reproduce the exact coupon from calibration. When <span class="math inline">\(t &gt;\)</span> market close, the function produces a “forward” bond rate — the rate you can lock in today for a bond starting at time <span class="math inline">\(t\)</span>.</p>
-<div class="nb">
-<p><strong>NB:</strong> You may be tempted to use an optimizer, but only algebra is required.</p>
-</div>
+<p>Now that you have your forward curve, write a function to calculate the coupon rate required to produce a par price for a given semi bond. The function should take a start date <code>t</code> (which is ≥ the market close) and a maturity date <code>T</code> (which is ≥ <code>t</code>). If <code>t</code> is the market close and <code>T</code> matches one of your calibration maturities, the function should reproduce the exact coupon rate from your calibration. When <code>t &gt; market close</code>, the function will calculate a “forward” bond rate, representing the rate you can lock in today for a bond that starts at time <code>t</code>. You may be tempted to use an optimizer but only algebra is required.</p>
 <p><strong>Example Output:</strong></p>
 <table class="caption-top table">
 <thead>
@@ -439,17 +431,19 @@ window.Quarto = {
 </tr>
 </tbody>
 </table>
-<p>Notice that the spot coupons for the 2-, 5-, and 10-year bonds match the calibration instrument coupons, and the 4-year rate (not a calibration target) is interpolated correctly.</p>
+<p><strong>NB</strong>: Two things to notice</p>
+<ul>
+<li>The spot coupons of the 2, 5, and 10 year bonds match our calibration instrument coupons.</li>
+<li>I computed the 4 year rate which wasn’t one of our calibration targets.</li>
+</ul>
 <hr>
 </section>
-<section id="problem-16-forward-curve-an-improved-calibration-method" class="level2">
-<h2 class="anchored" data-anchor-id="problem-16-forward-curve-an-improved-calibration-method">Problem 16: Forward Curve — An Improved Calibration Method</h2>
-<p>The discount rate grid from our bootstrapper is very coarse, which can produce large jumps in rates. Develop an alternative calibrator that uses a step function with a finer grid (monthly or weekly intervals) to produce the same spot bond prices while penalizing large rate jumps. This new calibrator should minimize rate jumps via a penalty function, ensuring smoother transitions. You have a lot of freedom here — be creative.</p>
-<p>Apply this new curve with the coupon rate function from Problem 15. The output for spot calibration instruments should remain unchanged, but forward rates may differ significantly. Plot both the original and new forward curves to visualize the differences.</p>
-<p>In practice, the “knots” at the front end of the curve are often based on Federal Reserve meeting dates, where rate changes are expected. The back end typically follows a more regular structure with larger intervals.</p>
-<div class="nb">
-<p><strong>NB:</strong> This will take considerably longer to run than your bootstrap.</p>
-</div>
+<section id="problem-16-forward-curve---an-improved-calibration-method" class="level2">
+<h2 class="anchored" data-anchor-id="problem-16-forward-curve---an-improved-calibration-method">Problem 16: Forward Curve - An Improved Calibration Method</h2>
+<p>The discount rate grid from our bootstrapper is very coarse which can lead to big jumps in rates. Develop an alternative calibrator that uses a step function with a finer grid, such as monthly or weekly intervals, to produce the same spot bond prices while penalizing large rate jumps. This new calibrator should minimize rate jumps by incorporating a penalty function, ensuring smoother transitions between rates. You have a lot of options here, so get crazy if you want. One solution can be found in the rates I gave above.</p>
+<p>Try applying this new curve with the coupon rate calculation function you developed in problem 15, which calculates the coupon required to produce a par price. The output for the spot calibration instruments (i.e., the calculated coupon rates or prices) should remain unchanged, but the forward rates may differ significantly. Plot both the original and new forward curves to visualize the differences.</p>
+<p>In practice, the ‘knots’ — specific points where discount rates change — at the front end of the curve are often based on market events, such as Federal Reserve meeting dates, where interest rates may be expected to change. This approach accounts for the higher frequency and impact of market events in the near term. On the other hand, the back end of the curve typically follows a more regular approach, similar to the one used in this problem. Here, the trade-offs between using larger intervals and maintaining smoother curves are influenced by the nature of the financial products being traded.</p>
+<p><strong>NB:</strong> This will take a lot longer to run than your bootstrap.</p>
 
 
 </section>
@@ -528,7 +522,7 @@ window.Quarto = {
     }
       var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
       var mailtoRegex = new RegExp(/^mailto:/);
-        var filterRegex = new RegExp('/' + window.location.host + '/');
+        var filterRegex = new RegExp("https:\/\/tyro2001\.github\.io\/mbs-analytics\/");
       var isInternal = (href) => {
           return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
       }

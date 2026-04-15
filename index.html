@@ -151,13 +151,7 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#how-to-use-these-exercises" id="toc-how-to-use-these-exercises" class="nav-link active" data-scroll-target="#how-to-use-these-exercises">How to Use These Exercises</a></li>
-  <li><a href="#industry-standards" id="toc-industry-standards" class="nav-link" data-scroll-target="#industry-standards">Industry Standards</a></li>
-  <li><a href="#clean-code-principles" id="toc-clean-code-principles" class="nav-link" data-scroll-target="#clean-code-principles">Clean Code Principles</a></li>
-  <li><a href="#a-note-on-llms" id="toc-a-note-on-llms" class="nav-link" data-scroll-target="#a-note-on-llms">A Note on LLMs</a></li>
-  <li><a href="#assumptions" id="toc-assumptions" class="nav-link" data-scroll-target="#assumptions">Assumptions</a></li>
-  <li><a href="#contact" id="toc-contact" class="nav-link" data-scroll-target="#contact">Contact</a></li>
-  <li><a href="#exercise-sets" id="toc-exercise-sets" class="nav-link" data-scroll-target="#exercise-sets">Exercise Sets</a></li>
+  <li><a href="#exercise-sets" id="toc-exercise-sets" class="nav-link active" data-scroll-target="#exercise-sets">Exercise Sets</a></li>
   </ul>
 </nav>
     </div>
@@ -167,7 +161,6 @@ ul.task-list li input[type="checkbox"] {
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
 <h1 class="title">Introduction to Mortgage Analytics</h1>
-<p class="subtitle lead">A progressive exercise set in mortgage mathematics and fixed-income analytics</p>
 </div>
 
 
@@ -184,77 +177,72 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<p><small>© 2025 Skipper Hartley. All rights reserved. Academic instructional use with attribution; commercial use requires permission.</small></p>
-<hr>
-<p>This set of exercises grew from a capstone project led with students from Emory University’s <a href="https://goizueta.emory.edu/msba">MSBA program</a>. The original problems were designed to familiarize students with basic mortgage concepts under idealized conditions. The content has since expanded to cover fixed-rate bonds, forward curve calibration, prepayment modeling, and Monte Carlo pricing. This is a work in progress — future additions will include trinomial lattices, PCAs, and C++.</p>
-<section id="how-to-use-these-exercises" class="level2">
-<h2 class="anchored" data-anchor-id="how-to-use-these-exercises">How to Use These Exercises</h2>
-<p>Work through the problems in order. Each one builds on the last. Implement your solutions in Python, applying the industry practices described below.</p>
-<hr>
-</section>
-<section id="industry-standards" class="level2">
-<h2 class="anchored" data-anchor-id="industry-standards">Industry Standards</h2>
-<p>While solving these problems, use standard tools and techniques from the software industry:</p>
+<p><small><small>© 2025 Skipper Hartley. All rights reserved. Academic instructional use with attribution; commercial use requires permission.</small></small></p>
+<p>This set of excercises grew from a capstone project that I lead with students from Emory University’s <a href="https://goizueta.emory.edu/msba">MSBA program</a>. In that case we applied machine learning techniques to predict monthly mortgage prepayment (defined below). The original problems were designed to familiarize the group with basic mortgage concepts under somewhat idealized conditions. That content stopped at problem 10. I have since added or updated topics regarding basic fixed rate bonds, forward curve calibration, prepayment, and Monte Carlo pricing. This a work in progress. Eventually we will cover trinomial lattices, PCAs, C++, etc.</p>
+<p><strong>Industry Standards</strong></p>
+<p>While solving these problems, I encourage you to use standard tools and techniques from the software industry. Some examples from my group are:</p>
 <ul>
 <li><a href="https://en.wikipedia.org/wiki/DevOps">DevOps</a></li>
 <li><a href="https://en.wikipedia.org/wiki/Coding_conventions">Coding standards</a></li>
 <li><a href="https://en.wikipedia.org/wiki/Git">Git</a></li>
 <li><a href="https://en.wikipedia.org/wiki/Code_review">Code reviews</a></li>
-<li>Automated testing (unit, regression, etc.)</li>
-<li>Debuggers and <a href="https://en.wikipedia.org/wiki/Profiling_(computer_programming)">profilers</a></li>
-<li>VS Code, <a href="https://en.wikipedia.org/wiki/Lint_(software)">Lint</a>, CoPilot</li>
+<li>Automated testing: Unit, regression, etc</li>
+<li>Debuggers</li>
+<li>VS Code</li>
+<li><a href="https://en.wikipedia.org/wiki/Lint_(software)">Lint</a></li>
+<li>CoPilot</li>
+<li><a href="https://en.wikipedia.org/wiki/Profiling_(computer_programming)">Profilers</a></li>
 </ul>
-<p>This is an opportunity to move from student to production coding.</p>
-<hr>
-</section>
-<section id="clean-code-principles" class="level2">
-<h2 class="anchored" data-anchor-id="clean-code-principles">Clean Code Principles</h2>
-<p>There are many excellent books on writing clean code. Here are key principles to guide you:</p>
+<p>This is an opportunity to move from student to production coding. I recommend finding out what your favorite open source project or company uses and adopting their approach.</p>
+<p><strong>Clean Code</strong></p>
+<p>There are many excellent books on writing clean code, and I recommend reading a few. However, here are some key principles to get you started.</p>
 <ul>
-<li>Put most logic in Python modules. Create a single top-level <code>demo.py</code> to demonstrate functionality.</li>
-<li>Use well-named variables. They make code easier to read and reduce documentation burden.</li>
-<li>Validate inputs — check that a divisor isn’t zero, that a price is non-negative, etc.</li>
-<li>Avoid <a href="https://en.wikipedia.org/wiki/Global_variable">global variables</a>, except for constants.</li>
-<li>Strive for clarity and maintainability over raw speed. Write as if handing the code to someone else.</li>
-<li>Avoid <a href="https://en.wikipedia.org/wiki/Program_optimization">premature optimization</a>. Let your profiler guide you.</li>
-<li>Document your API. Does it feel like a natural interface to another programmer?</li>
-<li>Do not use <a href="https://en.wikipedia.org/wiki/Magic_number_(programming)">magic numbers or strings</a>. Put them in named variables.</li>
-<li>Do not copy and paste code. Refactor shared logic into functions. Keep your code DRY (Don’t Repeat Yourself).</li>
-<li>Separate IO from logic. Business logic should not depend on a particular data source.</li>
-<li>Use <a href="https://en.wikipedia.org/wiki/Unit_testing">unit tests</a>. They are your safety net when refactoring.</li>
-<li>Keep functions short — ideally no longer than a page.</li>
-<li>Avoid computing the same thing twice. Move invariants outside loops.</li>
-<li>Leverage <a href="https://en.wikipedia.org/wiki/Array_programming">vectorization</a> via <a href="https://numpy.org/">NumPy</a>. Python loops are slow.</li>
-<li>Think like a mathematician. Calculus can make your code cleaner and faster.</li>
-<li>Track units. Are values decimal or percent? Confusion here causes hard-to-find bugs.</li>
-<li>Use <a href="https://betterprogramming.pub/3-different-docstring-formats-for-python-d27be81e0d68">docstrings</a>. NumPy format is recommended.</li>
+<li>Put most of your logic in python modules and create a single top layer application called demo.py to demonstrate the functionality.</li>
+<li>Use well named variables. They make the code easier to read and reduce the amount of documentation required.<br>
+</li>
+<li>Validate your input to ensure it meets expected ranges or conditions—such as checking that a divisor isn’t zero or a stock price is non-negative—while keeping performance in mind. These checks help catch hard-to-find errors and keep functions reliable without unnecessary slowdowns.</li>
+<li>Avoid <a href="https://en.wikipedia.org/wiki/Global_variable">global variables</a> with the possible exception of constants.<br>
+</li>
+<li>Strive for clarity and maintainability even if it increases runtime slightly. Pretend you are going to hand this code off to someone else. If you are the only one who knows the code it will hinder your career advancement.</li>
+<li>Avoid <a href="https://en.wikipedia.org/wiki/Program_optimization">premature optimization</a>. Let your profiler guide you to the code that truly needs to run faster.</li>
+<li>Consider another programmer who might use your code in the future. Is the API well documented? Does it feel like a natural interface?</li>
+<li>Do not use <a href="https://en.wikipedia.org/wiki/Magic_number_(programming)">magic</a> numbers or strings. Put them in variables. There are three big benefits:
+<ul>
+<li>The code is more readable.<br>
+</li>
+<li>If you need to change the values, you can do it in one place. Imagine your team decided to change the estimate of Pi from 3.14 to 3.14159. It is much easier to change <code>PI = 3.14</code> to <code>PI = 3.14159</code> in one place than looking through your entire code base for all occurrences of 3.14</li>
+<li>If you make a typo in a magic number, your compiler/interpreter will not catch it. The interpreter will complain in the case of a mistyped variable name<br>
+</li>
+</ul></li>
+<li>Do not copy and paste code. If you find yourself tempted to do so, take the opportunity to refactor the shared logic into a separate function. This approach offers similar benefits to avoiding magic values—it promotes clarity, consistency, and maintainability. Trust me, having to comb through a sprawling codebase to locate and update duplicated logic is an absolute nightmare. Save yourself (and others) the trouble by keeping your code DRY (Don’t Repeat Yourself).</li>
+<li>Do not combine IO and logic. Keep the code that gathers or reports data separate from the code that implements business logic. It is better for the IO code to wrap up its data into structures that aren’t dependent on a particular IO source, and pass those structures to business logic.<br>
+</li>
+<li>Use <a href="https://en.wikipedia.org/wiki/Unit_testing">unit tests</a>. As you progress through the problems you will find you need to make significant changes to your existing code. The only way to be confident in fundamental updates is to have a suite of tests to make sure you haven’t broken something unexpected. Testing also tends to make your code cleaner because it naturally leads to the separation of IO and logic. Some developers even <a href="https://en.wikipedia.org/wiki/Test-driven_development">write tests before writing the logic</a></li>
+<li>Minimize function length. It is very difficult to understand a function with hundreds of lines. Try to break it up into smaller functions for clarity. My rule of thumb is to keep them no longer than a page.</li>
+<li>Try not to compute the same thing twice. For instance, if your date grid isn’t changing but your rates are, make sure the date grid is computed outside of any loops. This should increase your computational efficiency and code clarity.<br>
+</li>
+<li>Leverage <a href="https://en.wikipedia.org/wiki/Array_programming">vectorization</a>. Python loops are very slow, but you can avoid them by working on an entire vector or matrix at a time via libraries such as <a href="https://numpy.org/">NumPy</a>.<br>
+</li>
+<li>Think like a mathematician. Applying basic calculus to some of the problems below will make your code cleaner and faster.</li>
+<li>Keep track of units. Are the units decimal or percent? Not knowing this can lead to a ton of mistakes.</li>
+<li>Use <a href="https://betterprogramming.pub/3-different-docstring-formats-for-python-d27be81e0d68">docstrings</a>. I prefer NumPy’s version.</li>
 </ul>
-<hr>
-</section>
-<section id="a-note-on-llms" class="level2">
-<h2 class="anchored" data-anchor-id="a-note-on-llms">A Note on LLMs</h2>
-<p>Do not overuse LLMs. The point of these exercises is to learn. Having an LLM solve the problems for you defeats the purpose. They are excellent as an advanced manual or documentation rough-draft generator — but the main logic should be yours.</p>
-<hr>
-</section>
-<section id="assumptions" class="level2">
-<h2 class="anchored" data-anchor-id="assumptions">Assumptions</h2>
+<p><strong>Large Language Models</strong></p>
+<p>Do not overuse LLMs. The point of this is to learn. Having ChatGPT solve the problems for you isn’t helpful. However they can be incredibly useful as an advanced manual or a documentation rough draft generator. Just don’t use them to write the main logic.</p>
+<p><strong>Assumptions</strong></p>
 <p>Please review these periodically:</p>
 <ul>
-<li>All mortgages are fixed-rate loans with no interest-only periods.</li>
-<li>Payments are made on the first of each month, with no partial accruals or defaults.</li>
-<li>The amount paid is either the scheduled payment or the full remaining balance plus interest. Curtailments are not modeled.</li>
-<li>A pool consists of loans that are identical in balance, coupon, origination, and term.</li>
-<li>No accrual period will start on a day of month greater than 28. This avoids month-end complications.</li>
-<li>No special treatment for holidays or weekends.</li>
-<li>If a settle date lands exactly at the end of an accrual period, the investor is not entitled to that period’s cash flow.</li>
+<li><p>All mortgages will be fixed-rate loans with no interest-only periods.</p></li>
+<li><p>Mortgage payments are made on the first of each month, with no partial accruals or defaults.</p></li>
+<li><p>The mortgage amount paid is either the scheduled contractual payment or the full remaining balance plus interest owed. We do not consider the case where the borrower “curtails” by paying more than their payment but less than full payoff amount.</p></li>
+<li><p>A pool of loans consists of contracts that are exactly the same. E.g. they share the same balance, coupon, origination, term, etc.</p></li>
+<li><p>No accrual period will start on a day of month that is greater than 28. This avoids tedious month end issues.</p></li>
+<li><p>There will be no special treatment for holidays and weekends.</p></li>
+<li><p>If your settle date lands exactly at the end of an accrual period, you are not entitled to the cash flow associated with that period.</p></li>
 </ul>
+<p><strong>Contact</strong></p>
+<p>All comments, corrections, and suggestions are welcomed. You can contact me through my <a href="http://www.linkedin.com/in/skipper-hartley-622a3617">LinkedIn account</a></p>
 <hr>
-</section>
-<section id="contact" class="level2">
-<h2 class="anchored" data-anchor-id="contact">Contact</h2>
-<p>All comments, corrections, and suggestions are welcome. Reach out via <a href="http://www.linkedin.com/in/skipper-hartley-622a3617">LinkedIn</a>.</p>
-<hr>
-</section>
 <section id="exercise-sets" class="level2">
 <h2 class="anchored" data-anchor-id="exercise-sets">Exercise Sets</h2>
 <table class="caption-top table">
@@ -273,7 +261,7 @@ ul.task-list li input[type="checkbox"] {
 </tr>
 <tr class="even">
 <td style="text-align: right;"><a href="./part2.html">II</a></td>
-<td style="text-align: left;">Prepayment (SMM), dates, payment delay, WAL</td>
+<td style="text-align: left;">Prepayment, dates, payment delay, WAL</td>
 <td style="text-align: center;">5–8</td>
 </tr>
 <tr class="odd">
@@ -283,17 +271,17 @@ ul.task-list li input[type="checkbox"] {
 </tr>
 <tr class="even">
 <td style="text-align: right;"><a href="./part4.html">IV</a></td>
-<td style="text-align: left;">CMT cash flows, bootstrapping, forward bond rates, smooth curves</td>
+<td style="text-align: left;">CMT cash flows, bootstrapping, forward bond rates, improved calibration</td>
 <td style="text-align: center;">13–16</td>
 </tr>
 <tr class="odd">
 <td style="text-align: right;"><a href="./part5.html">V</a></td>
-<td style="text-align: left;">Improved prepayment model, negative convexity, DV01/convexity, multi-path</td>
+<td style="text-align: left;">Improved prepayment model, negative convexity, derivatives, multi-path</td>
 <td style="text-align: center;">17–20</td>
 </tr>
 <tr class="even">
 <td style="text-align: right;"><a href="./part6.html">VI</a></td>
-<td style="text-align: left;">Hull-White MC, MC valuation, antithetic variates</td>
+<td style="text-align: left;">Hull-White Monte Carlo, MC valuation, antithetic variates</td>
 <td style="text-align: center;">21–23</td>
 </tr>
 </tbody>
@@ -376,7 +364,7 @@ ul.task-list li input[type="checkbox"] {
     }
       var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
       var mailtoRegex = new RegExp(/^mailto:/);
-        var filterRegex = new RegExp('/' + window.location.host + '/');
+        var filterRegex = new RegExp("https:\/\/tyro2001\.github\.io\/mbs-analytics\/");
       var isInternal = (href) => {
           return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
       }

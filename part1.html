@@ -210,23 +210,21 @@ window.Quarto = {
 </header>
 
 
-<section id="problem-1-mortgage-payment" class="level2">
-<h2 class="anchored" data-anchor-id="problem-1-mortgage-payment">Problem 1: Mortgage Payment</h2>
+<section id="problem-1-mortgage-payment" class="level3">
+<h3 class="anchored" data-anchor-id="problem-1-mortgage-payment">Problem 1: Mortgage Payment</h3>
 <p>The length of a loan is known as its <strong>term</strong>. Common terms include 15 and 30 years. We sometimes refer to an <strong>original term</strong> to differentiate it from the <strong>remaining term</strong>, which is the remaining life of an aged loan. For clarity:</p>
 <p><span class="math display">\[
 \text{term} = \text{original term} = \text{age} + \text{remaining term}
 \]</span></p>
-<p>A borrower must pay an interest rate for a mortgage, known as its <strong>coupon</strong>. For reasons that will be clear later, we will refer to the borrower’s coupon as the <strong>gross coupon</strong>. This coupon is quoted as an annual rate, but we will always divide it by 12 (the number of months in a year) when computing owed interest. The interest owed is the loan balance at the beginning of the period times the coupon divided by 12.</p>
+<p>A borrower must pay an interest rate for a mortgage, known as its <strong>coupon</strong>. For reasons that will be clear later, we will refer to the borrower’s coupon as the <strong>gross coupon</strong>. This coupon is quoted as an annual rate, but we will always divide it by 12 (the number of months in a year) when computing owed interest. In our case, the interest owed will be the loan balance at the beginning of the period times the coupon divided by 12.</p>
 <p>Given a term <span class="math inline">\(M\)</span> in months, a gross coupon <span class="math inline">\(C\)</span>, and an initial loan amount <span class="math inline">\(B\)</span>, derive a formula for the constant monthly payment <span class="math inline">\(P\)</span> such that:</p>
-<p><span class="math display">\[B(0) = B\]</span></p>
-<p><span class="math display">\[B(1) = B(0) \cdot (1 + C/12) - P\]</span></p>
-<p><span class="math display">\[\vdots\]</span></p>
-<p><span class="math display">\[B(t) = B(t-1) \cdot (1 + C/12) - P\]</span></p>
-<p><span class="math display">\[\vdots\]</span></p>
-<p><span class="math display">\[B(M) = 0\]</span></p>
-<div class="nb">
-<p><strong>NB:</strong> If you haven’t reviewed geometric series recently, you might want to revisit the topic.</p>
-</div>
+<p><span class="math inline">\(B(0) = B\)</span></p>
+<p><span class="math inline">\(B(1) = B(0) * (1 + C/12) - P\)</span></p>
+<p>…</p>
+<p><span class="math inline">\(B(t) = B(t-1) * (1 + C/12) - P\)</span></p>
+<p>…</p>
+<p><span class="math inline">\(B(M)\)</span> = 0</p>
+<p><strong>NB</strong>: If you haven’t reviewed geometric series recently, you might want to revisit the topic.</p>
 <p><strong>Example Output:</strong></p>
 <table class="caption-top table">
 <thead>
@@ -266,8 +264,8 @@ window.Quarto = {
 </table>
 <hr>
 </section>
-<section id="problem-2-balance-schedule" class="level2">
-<h2 class="anchored" data-anchor-id="problem-2-balance-schedule">Problem 2: Balance Schedule</h2>
+<section id="problem-2-balance-schedule" class="level3">
+<h3 class="anchored" data-anchor-id="problem-2-balance-schedule">Problem 2: Balance Schedule</h3>
 <p>Use the formula from Problem 1 to project the <strong>scheduled</strong> contractual information for the life of the mortgage. We use the term “scheduled” to indicate that the borrower doesn’t prepay, fall behind on payments, or curtail the loan.</p>
 <p>Your output should include four columns:</p>
 <ul>
@@ -282,9 +280,9 @@ window.Quarto = {
 <li>The contractual payment less the interest owed</li>
 <li>The change in the balance from one period to the next</li>
 </ul>
-<p>Given our assumptions, the second method is preferred because it is more convenient for future problems.</p>
+<p>Given our assumptions, I prefer the second method because it will be more convenient for future problems.</p>
 <p><strong>Example Output:</strong></p>
-<p>A 12-month mortgage with a 5% coupon and a balance of 250:</p>
+<p>A 12 month mortgage with a 5% coupon and a balance of 250</p>
 <table class="caption-top table">
 <thead>
 <tr class="header">
@@ -377,26 +375,24 @@ window.Quarto = {
 </table>
 <hr>
 </section>
-<section id="problem-3-mortgage-plots" class="level2">
-<h2 class="anchored" data-anchor-id="problem-3-mortgage-plots">Problem 3: Mortgage Plots</h2>
-<p>Create simple visualizations:</p>
+<section id="problem-3-mortgage-plots" class="level3">
+<h3 class="anchored" data-anchor-id="problem-3-mortgage-plots">Problem 3: Mortgage Plots</h3>
+<p>Create some simple visualizations:</p>
 <ul>
 <li>The mortgage balance over time</li>
 <li>A comparison of the interest and principal paid over time</li>
 </ul>
 <hr>
 </section>
-<section id="problem-4-mortgage-backed-securities" class="level2">
-<h2 class="anchored" data-anchor-id="problem-4-mortgage-backed-securities">Problem 4: Mortgage Backed Securities</h2>
-<p>When creating a <strong>Mortgage Backed Security</strong> (MBS), a financial institution combines many “similar” loans into a single <strong>pool</strong> and sells them to an investor. In many cases, the institution creates a <strong>Pass-Through</strong> bond: they continue to collect the borrower’s payments, take a small <strong>Servicing Fee</strong> (typically 0.25% of the pool balance), and pass the remaining amount to the investor. The investor is entitled to all the principal paid, but the servicing fee comes out of the interest. The <strong>Net Coupon</strong> is the gross coupon less the servicing fee (we assume all other fees are zero).</p>
-<div class="nb">
-<p><strong>NB:</strong> Scheduled balances are computed with the gross coupon, but the interest paid to the investor is computed with the net coupon.</p>
-</div>
-<p>It is convenient to think of a pool of loans as a single loan, where attributes such as the gross coupon are the balance-weighted average of the individual loans in the pool, and the balance is the sum of the individual balances.</p>
-<p>Assume the loan from the previous exercises is actually a pool. Add a new column representing the net interest paid to the investor, where the servicing fee is 0.25%.</p>
+<section id="problem-4-mortgage-backed-securities" class="level3">
+<h3 class="anchored" data-anchor-id="problem-4-mortgage-backed-securities">Problem 4: Mortgage Backed Securities</h3>
+<p>When creating a <strong>Mortgage Backed Security</strong> (MBS), a financial institution will combine many “similar” loans into a single <strong>pool</strong> and sell them to an investor. In many cases, the financial institution creates a <strong>Pass-Through</strong> bond, which means they continue to collect the borrower’s payments, take a small <strong>Servicing Fee</strong> (typically 0.25% of the pool balance), and pass the remaining amount to the investor. The investor is entitled to all the principal paid, but the servicing fee comes out of the interest paid. The <strong>Net Coupon</strong> is the gross coupon less the servicing and other fees. We only care about the former and assume the latter is zero.</p>
+<p><strong>NB</strong>: The scheduled balances are computed with the gross coupon, but the interest paid to the investor is computed with the net coupon.</p>
+<p>It is convenient to think of a pool of loans as a single loan, where attributes such as the gross coupon are the balance-weighted gross coupon of the individual loans in the pool, and attributes such as balance are the sum of the individual balances.</p>
+<p>Assume the loan you worked with in the previous exercises is actually a pool of loans. Add a new column that represents the net interest paid to the investor, where the servicing fee is 0.25%.</p>
 <p>Further reading: <a href="https://en.wikipedia.org/wiki/Mortgage-backed_security">Mortgage-Backed Security (Wikipedia)</a></p>
 <p><strong>Example Output:</strong></p>
-<p>A 12-month MBS with a 5% gross coupon, 4.75% net coupon, and a balance of 250:</p>
+<p>A 12 month MBS with a 5% gross coupon, 4.75% net coupon, and a balance of 250:</p>
 <table class="caption-top table">
 <thead>
 <tr class="header">
@@ -487,7 +483,7 @@ window.Quarto = {
 </tr>
 </tbody>
 </table>
-<p>Notice that the balance and principal paid are identical to the previous problem while the interest is slightly lower.</p>
+<p>Notice the balance and the principal paid are identical to the previous problem’s while the interest is slightly lower.</p>
 
 
 </section>
@@ -566,7 +562,7 @@ window.Quarto = {
     }
       var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
       var mailtoRegex = new RegExp(/^mailto:/);
-        var filterRegex = new RegExp('/' + window.location.host + '/');
+        var filterRegex = new RegExp("https:\/\/tyro2001\.github\.io\/mbs-analytics\/");
       var isInternal = (href) => {
           return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
       }
